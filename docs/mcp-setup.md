@@ -153,8 +153,11 @@ edit/run C# directly in the Editor.
 
 1. **Install the bridge in your Unity project** (one-time): Unity → **Window →
    Package Manager → + → Add package from git URL**, paste
-   `https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#main`. The
-   in-Editor wizard checks Python + uv and can configure detected MCP clients.
+   `https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#main` (pin a
+   release tag like `#v10.0.0` for reproducible installs; also on OpenUPM as
+   `com.coplaydev.unity-mcp`). The in-Editor wizard checks Python + uv and can
+   configure detected MCP clients. Upgrading from v9 or older? Follow the
+   project's migration guide — v10 reorganized tools into Tool Groups.
 2. **Install `uv`** if you haven't (see [Prerequisites](#prerequisites)); the
    server launches via `uvx --from mcpforunityserver mcp-for-unity`.
 3. **Keep the Editor open**, reload your harness, and try *"list the GameObjects
@@ -192,7 +195,11 @@ runs projects, reads/edits scenes and scripts, and captures debug output.
    in your environment if detection fails.
 2. Reload your harness and try *"run the Godot project and show me any errors"*.
 
-Godot-specific — it does nothing for Unity/Unreal/web projects.
+Godot-specific — it does nothing for Unity/Unreal/web projects. **Godot 4.x
+only** (the whole Godot MCP ecosystem is; 3.x is not supported). There is no
+first-party Godot server; if you outgrow this portable one, community
+in-editor addons with bigger toolsets exist (e.g. *Godot MCP Native*, *Godot
+MCP Pro* on the Asset Library) — see the catalog notes.
 
 ## Unreal MCP (engine control)
 

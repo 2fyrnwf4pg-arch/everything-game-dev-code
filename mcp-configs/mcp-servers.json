@@ -365,7 +365,8 @@
       ],
       "env": {},
       "notes": [
-        "Two halves like the Blender MCP: install the Unity-side bridge in your project (Package Manager -> Add package from git URL: https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#main) and keep the Unity Editor open; the harness launches this server (PyPI package mcpforunityserver) which connects to it.",
+        "Two halves like the Blender MCP: install the Unity-side bridge in your project (Package Manager -> Add package from git URL: https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#main — pin a release tag like #v10.0.0 for reproducible installs; also available via OpenUPM as com.coplaydev.unity-mcp) and keep the Unity Editor open; the harness launches this server (PyPI package mcpforunityserver) which connects to it.",
+        "v10 (2026-06) added Tool Groups (tools organized by domain: vfx, animation, UI, testing) and improved multi-instance routing; when upgrading a project from v9 or older, follow the project's migration guide.",
         "Prereqs: Unity 2021.3 LTS+, Python 3.10+ with uv (provides uvx). First run downloads mcpforunityserver from PyPI.",
         "Engine-specific (engine-control): use only inside Unity work; it does not apply to Unreal/Godot/web. Keep Unity implementation detail in the Unity rules layer.",
         "Pairs with the unity-setup, scene-bootstrap, unity-scene-audit, and unity-review commands. Distinct from unity-docs / unity-package-registry, which are documentation servers, not Editor control."
@@ -413,6 +414,7 @@
       "env": {},
       "notes": [
         "Portable: runs straight from npm (@coding-solo/godot-mcp) via npx, no clone or path needed. GODOT_PATH is optional (auto-detected); set it in your environment only if detection fails.",
+        "Godot 4.x only — like the rest of the Godot MCP ecosystem it does not support 3.x projects. There is no first-party Godot MCP server; heavier community alternatives exist as in-editor addons (e.g. Godot MCP Native, Godot MCP Pro on the Asset Library) if you need a deeper toolset than this portable server, at the cost of a per-project addon install.",
         "Engine-specific (engine-control): use only inside Godot work; it does not apply to Unity/Unreal/web. Keep Godot implementation detail in the Godot rules layer.",
         "Pairs with the godot-setup, godot-scene-audit, godot-build-fix, and godot-review commands. Distinct from godot-docs, which is a documentation server, not engine control."
       ]
