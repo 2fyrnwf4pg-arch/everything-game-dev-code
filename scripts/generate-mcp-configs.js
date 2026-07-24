@@ -34,10 +34,18 @@ function isPlaceholder(value) {
   return typeof value === "string" && value.includes("<") && value.includes(">");
 }
 
-// A server is runnable only when neither its command nor any argument carries a
-// `<...>` placeholder — i.e. it needs no team-local setup (a missing command) and
-// no machine-specific path (e.g. an Unreal server launched from a local clone).
+function isHttp(def) {
+  return def.transport === "http";
+}
+
+// A server is runnable only when neither its launch fields (command/args for
+// stdio, url for http) carry a `<...>` placeholder — i.e. it needs no team-local
+// setup (a missing command) and no machine-specific path (e.g. an Unreal server
+// launched from a local clone).
 function hasPlaceholder(def) {
+  if (isHttp(def)) {
+    return isPlaceholder(def.url);
+  }
   return [def.command, ...(Array.isArray(def.args) ? def.args : [])].some(isPlaceholder);
 }
 
@@ -60,9 +68,14 @@ function envExpansion(env) {
 function buildUniversal() {
   const mcpServers = {};
   for (const [id, def] of runnable) {
-    const entry = { command: def.command };
-    if (Array.isArray(def.args) && def.args.length > 0) {
-      entry.args = def.args;
+    let entry;
+    if (isHttp(def)) {
+      entry = { type: "http", url: def.url };
+    } else {
+      entry = { command: def.command };
+      if (Array.isArray(def.args) && def.args.length > 0) {
+        entry.args = def.args;
+      }
     }
     if (def.env && Object.keys(def.env).length > 0) {
       entry.env = envExpansion(def.env);
@@ -75,8 +88,13 @@ function buildUniversal() {
 function buildOpencode() {
   const mcp = {};
   for (const [id, def] of runnable) {
-    const command = [def.command, ...(Array.isArray(def.args) ? def.args : [])];
-    const entry = { type: "local", command, enabled: true };
+    let entry;
+    if (isHttp(def)) {
+      entry = { type: "remote", url: def.url, enabled: true };
+    } else {
+      const command = [def.command, ...(Array.isArray(def.args) ? def.args : [])];
+      entry = { type: "local", command, enabled: true };
+    }
     if (def.env && Object.keys(def.env).length > 0) {
       entry.environment = envExpansion(def.env);
     }
@@ -98,9 +116,15 @@ function buildCodex() {
   ];
   for (const [id, def] of runnable) {
     lines.push(`[mcp_servers.${id}]`);
-    lines.push(`command = ${tomlString(def.command)}`);
-    const args = Array.isArray(def.args) ? def.args : [];
-    lines.push(`args = [${args.map(tomlString).join(", ")}]`);
+    if (isHttp(def)) {
+      // Codex reaches streamable-HTTP servers via a url entry instead of a
+      // launched command.
+      lines.push(`url = ${tomlString(def.url)}`);
+    } else {
+      lines.push(`command = ${tomlString(def.command)}`);
+      const args = Array.isArray(def.args) ? def.args : [];
+      lines.push(`args = [${args.map(tomlString).join(", ")}]`);
+    }
     if (def.env && Object.keys(def.env).length > 0) {
       lines.push(`[mcp_servers.${id}.env]`);
       for (const key of Object.keys(def.env)) {
@@ -163,12 +187,18 @@ launch and never written to disk. Set the variable (e.g. \`FAL_KEY\`) before use
 
 \`\`\`bash
 ${runnable
+  .filter(([, def]) => !isHttp(def))
   .map(([id, def]) => {
     const parts = [def.command, ...(Array.isArray(def.args) ? def.args : [])];
     return `codex mcp add ${id} -- ${parts.join(" ")}`;
   })
   .join("\n")}
 \`\`\`
+
+HTTP servers (${
+    runnable.filter(([, def]) => isHttp(def)).map(([id]) => `\`${id}\``).join(", ") || "_none_"
+  }) have no launch command — merge their \`url\` blocks from
+[codex.toml](./codex.toml) into \`~/.codex/config.toml\` instead.
 
 ## Configure per team (not generated)
 

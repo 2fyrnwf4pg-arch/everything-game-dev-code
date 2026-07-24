@@ -45,9 +45,28 @@
         "type": "object",
         "additionalProperties": true,
         "required": [
-          "purpose",
-          "command"
+          "purpose"
         ],
+        "if": {
+          "properties": {
+            "transport": {
+              "const": "http"
+            }
+          },
+          "required": [
+            "transport"
+          ]
+        },
+        "then": {
+          "required": [
+            "url"
+          ]
+        },
+        "else": {
+          "required": [
+            "command"
+          ]
+        },
         "properties": {
           "category": {
             "type": "string"
@@ -69,9 +88,17 @@
             }
           },
           "transport": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "stdio",
+              "http"
+            ]
           },
           "command": {
+            "type": "string",
+            "minLength": 1
+          },
+          "url": {
             "type": "string",
             "minLength": 1
           },

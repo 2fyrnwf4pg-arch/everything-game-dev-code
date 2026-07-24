@@ -23,3 +23,6 @@ args = ["-y", "@playwright/mcp@latest"]
 [mcp_servers.unity-editor]
 command = "uvx"
 args = ["--from", "mcpforunityserver", "mcp-for-unity", "--transport", "stdio"]
+
+[mcp_servers.unreal-editor]
+url = "http://127.0.0.1:8000/mcp"

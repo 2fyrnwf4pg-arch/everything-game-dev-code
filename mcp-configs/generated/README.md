@@ -37,6 +37,7 @@ generated from the same catalog so they always match.
 - `godot-editor` — Drive the Godot engine via the Godot MCP server (Coding-Solo): launch the editor, run projects, read/modify scenes and nodes, edit scripts, and capture debug/console output so scene work and run-time debugging act on the real project.
 - `playwright` — Drive a real browser to playtest and QA web (HTML5) builds: navigate, click/drag/type, capture screenshots, and read console + page errors.
 - `unity-editor` — Drive the Unity Editor from the assistant via MCP for Unity (CoplayDev): inspect and modify scenes and GameObjects, manage and import assets, run Editor menu items, read the console, and edit/run C# — so scene scaffolding and audits act directly in the Editor instead of hand-editing YAML.
+- `unreal-editor` — Drive the Unreal Editor via Epic's official Unreal MCP plugin (UE 5.8+, Experimental): the editor embeds an MCP server over local HTTP exposing actor spawning, lighting, material instances, Slate widget inspection, and automation tests as tools.
 
 Env values are emitted as `${VAR}` so secrets are read from your environment at
 launch and never written to disk. Set the variable (e.g. `FAL_KEY`) before use.
@@ -51,10 +52,13 @@ codex mcp add playwright -- npx -y @playwright/mcp@latest
 codex mcp add unity-editor -- uvx --from mcpforunityserver mcp-for-unity --transport stdio
 ```
 
+HTTP servers (`unreal-editor`) have no launch command — merge their `url` blocks from
+[codex.toml](./codex.toml) into `~/.codex/config.toml` instead.
+
 ## Configure per team (not generated)
 
 These catalog entries still use a `<your-...-command>` placeholder, so they are
 intentionally **not** emitted here — give them a real command in
 [../mcp-servers.json](../mcp-servers.json) and re-run `npm run sync:mcp`:
 
-`ci-builds`, `fetch-docs`, `filesystem`, `git`, `github`, `godot-docs`, `issue-tracker`, `ripgrep`, `storefront-docs`, `telemetry`, `unity-docs`, `unity-package-registry`, `unreal-docs`, `unreal-editor`
+`ci-builds`, `fetch-docs`, `filesystem`, `git`, `github`, `godot-docs`, `issue-tracker`, `ripgrep`, `storefront-docs`, `telemetry`, `unity-docs`, `unity-package-registry`, `unreal-docs`, `unreal-editor-community`

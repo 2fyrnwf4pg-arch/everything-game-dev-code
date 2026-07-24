@@ -399,12 +399,32 @@
       "category": "engine-control",
       "enabled_by_default": false,
       "recommended": true,
-      "purpose": "Drive the Unreal Editor via the Unreal MCP server (chongdashu): control actors, blueprints, levels, and editor automation so scene/blueprint work acts directly in the Editor.",
+      "purpose": "Drive the Unreal Editor via Epic's official Unreal MCP plugin (UE 5.8+, Experimental): the editor embeds an MCP server over local HTTP exposing actor spawning, lighting, material instances, Slate widget inspection, and automation tests as tools.",
       "when_to_use": [
-        "spawn/edit actors and wire blueprints live instead of by hand",
-        "audit level/blueprint structure against the unreal rules while the project is open",
-        "run editor automation or read output while diagnosing a build",
+        "spawn/edit actors and configure lighting or materials live instead of by hand",
+        "audit level structure against the unreal rules while the project is open",
+        "run automation tests or editor operations while diagnosing a build",
         "apply an unreal-setup result to the open project"
+      ],
+      "transport": "http",
+      "url": "http://127.0.0.1:8000/mcp",
+      "env": {},
+      "notes": [
+        "Official first-party plugin, pre-wired and portable: no clone, no Python, no machine paths. In your Unreal project enable Edit -> Plugins -> 'Unreal MCP' (its Toolset Registry dependency enables automatically), restart, and keep the Editor open; the server listens on http://127.0.0.1:8000/mcp (port/path configurable under Editor Preferences -> Model Context Protocol).",
+        "Experimental in UE 5.8 and deliberately minimal; tool discovery runs through meta-tools (list_toolsets / describe_toolset / call_tool). Local-loopback only, no auth layer — never expose the port beyond the machine. The editor can also emit client configs itself via the console command `ModelContextProtocol.GenerateClientConfig <Client>`, but the scaffold's committed configs already cover that.",
+        "Needs UE 5.8+. On older engine versions, or if you need a broader toolset than the experimental plugin ships, use the community alternative `unreal-editor-community` below.",
+        "Engine-specific (engine-control): use only inside Unreal work; it does not apply to Unity/Godot/web. Keep Unreal implementation detail in the Unreal rules layer.",
+        "Pairs with the unreal-setup, unreal-blueprint-audit, unreal-build-fix, and unreal-review commands. Distinct from unreal-docs, which is a documentation server, not Editor control."
+      ]
+    },
+    "unreal-editor-community": {
+      "category": "engine-control",
+      "enabled_by_default": false,
+      "recommended": false,
+      "purpose": "Alternative Unreal Editor control via the community Unreal MCP server (chongdashu): actors, blueprints, levels, and editor automation — a broader toolset than Epic's experimental plugin, for UE versions before 5.8 or deeper blueprint work.",
+      "when_to_use": [
+        "drive the Unreal Editor on engine versions older than UE 5.8 (no official MCP plugin)",
+        "wire blueprints live — blueprint authoring is beyond the official plugin's experimental toolset"
       ],
       "transport": "stdio",
       "command": "uv",
@@ -416,10 +436,10 @@
       ],
       "env": {},
       "notes": [
-        "NOT pre-wired: the canonical server (github.com/chongdashu/unreal-mcp) has no portable npx/uvx package — it launches from a local clone via `uv --directory <path>/Python run unreal_mcp_server.py`, so the path is a per-machine placeholder. Replace it in your own client config; the scaffold never commits a machine path.",
+        "NOT pre-wired: the community server (github.com/chongdashu/unreal-mcp) has no portable npx/uvx package — it launches from a local clone via `uv --directory <path>/Python run unreal_mcp_server.py`, so the path is a per-machine placeholder. Replace it in your own client config; the scaffold never commits a machine path.",
         "Two halves like the other engine servers: install the UnrealMCP plugin (MCPGameProject/Plugins/UnrealMCP) in your project and keep the Editor open; this server connects to it. Prereqs: Python 3.10+ with uv.",
-        "Engine-specific (engine-control): use only inside Unreal work; it does not apply to Unity/Godot/web. Keep Unreal implementation detail in the Unreal rules layer.",
-        "Pairs with the unreal-setup, unreal-blueprint-audit, unreal-build-fix, and unreal-review commands. Distinct from unreal-docs, which is a documentation server, not Editor control."
+        "Prefer the official `unreal-editor` entry on UE 5.8+ — it is first-party, pre-wired, and needs no local clone. Do not run both against the same Editor session.",
+        "Engine-specific (engine-control): use only inside Unreal work; it does not apply to Unity/Godot/web. Keep Unreal implementation detail in the Unreal rules layer."
       ]
     },
     "playwright": {

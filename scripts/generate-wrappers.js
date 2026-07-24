@@ -27,6 +27,10 @@ function readText(relPath) {
 // the MCP servers, so this generator owns the whole file. The `mcp` block is
 // derived from the same catalog as scripts/generate-mcp-configs.js (runnable
 // servers only, ${VAR} env expansion) so the two representations never diverge.
+function isHttp(def) {
+  return def.transport === "http";
+}
+
 function buildOpencodeMcp() {
   const registry = JSON.parse(readText("mcp-configs/mcp-servers.json"));
   const mcp = {};
@@ -34,17 +38,25 @@ function buildOpencodeMcp() {
     a < b ? -1 : a > b ? 1 : 0
   );
   for (const [id, def] of entries) {
-    // Skip servers with a `<...>` placeholder in the command or any arg (a missing
-    // command, or a machine-specific path) — they can't be pre-wired portably.
-    const parts = [def.command, ...(Array.isArray(def.args) ? def.args : [])];
+    // Skip servers with a `<...>` placeholder in their launch fields (command/
+    // args for stdio, url for http) — a missing command or a machine-specific
+    // path can't be pre-wired portably.
+    const parts = isHttp(def)
+      ? [def.url]
+      : [def.command, ...(Array.isArray(def.args) ? def.args : [])];
     const placeholder = parts.some(
       (p) => typeof p === "string" && p.includes("<") && p.includes(">")
     );
     if (placeholder) {
       continue;
     }
-    const command = [def.command, ...(Array.isArray(def.args) ? def.args : [])];
-    const entry = { type: "local", command, enabled: true };
+    let entry;
+    if (isHttp(def)) {
+      entry = { type: "remote", url: def.url, enabled: true };
+    } else {
+      const command = [def.command, ...(Array.isArray(def.args) ? def.args : [])];
+      entry = { type: "local", command, enabled: true };
+    }
     if (def.env && Object.keys(def.env).length > 0) {
       entry.environment = {};
       for (const key of Object.keys(def.env)) {
