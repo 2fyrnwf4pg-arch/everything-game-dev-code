@@ -371,6 +371,28 @@
         "Pairs with the unity-setup, scene-bootstrap, unity-scene-audit, and unity-review commands. Distinct from unity-docs / unity-package-registry, which are documentation servers, not Editor control."
       ]
     },
+    "unity-editor-native": {
+      "category": "engine-control",
+      "enabled_by_default": false,
+      "recommended": false,
+      "purpose": "Alternative Unity Editor control via Unity's built-in MCP support (Unity 6+, com.unity.ai.assistant): the Editor runs its own MCP bridge and clients connect through a relay binary — first-party, no Python/uv, with in-Editor connection approval.",
+      "when_to_use": [
+        "drive the Unity Editor with zero external dependencies on Unity 6+ (no Python/uv, no third-party bridge package)",
+        "work under Unity's built-in client-approval flow (Project Settings -> AI -> Unity MCP) when team policy prefers first-party tooling"
+      ],
+      "transport": "stdio",
+      "command": "<your-home-dir>/.unity/relay/relay_win.exe",
+      "args": [
+        "--mcp"
+      ],
+      "env": {},
+      "notes": [
+        "NOT pre-wired: the relay binary Unity installs lives under the user's home directory and is per-platform (Windows `%USERPROFILE%\\.unity\\relay\\relay_win.exe`, macOS arm64 `~/.unity/relay/relay_mac_arm64.app/Contents/MacOS/relay_mac_arm64`, macOS x64 `~/.unity/relay/relay_mac_x64.app/Contents/MacOS/relay_mac_x64`, Linux `~/.unity/relay/relay_linux`), so the command is a per-machine placeholder — register it in your own client config with the real absolute path, always passing `--mcp`.",
+        "Requires Unity 6 (6000.0)+ with the com.unity.ai.assistant package installed; the bridge starts with the Editor (check Project Settings -> AI -> Unity MCP shows Running). New clients appear there as a Pending Connection you must Accept once.",
+        "The pre-wired `unity-editor` (CoplayDev bridge) remains the default: portable command, Unity 2021.3+, and a much larger tool catalog. Choose this native server for first-party-only setups on Unity 6+; do not run both against the same Editor session.",
+        "Engine-specific (engine-control): use only inside Unity work; it does not apply to Unreal/Godot/web. Keep Unity implementation detail in the Unity rules layer."
+      ]
+    },
     "godot-editor": {
       "category": "engine-control",
       "enabled_by_default": false,

@@ -163,6 +163,25 @@ edit/run C# directly in the Editor.
 Prereqs: Unity 2021.3 LTS+ and Python 3.10+ with uv. This server is
 Unity-specific — it does nothing for Unreal/Godot/web projects.
 
+**Alternative — Unity's built-in MCP (Unity 6+):** since Unity 6 (and
+prominently in 6.5) the Editor ships its own MCP bridge via the
+`com.unity.ai.assistant` package — first-party, no Python/uv, with an
+in-Editor approval flow (**Project Settings → AI → Unity MCP**; new clients
+show up there as a *Pending Connection* to Accept). It is **not pre-wired**
+because clients launch a relay binary from your home directory (per-user,
+per-platform — e.g. `%USERPROFILE%\.unity\relay\relay_win.exe` on Windows),
+so register it yourself with the real path and the mandatory `--mcp` flag,
+e.g. for Claude Code:
+
+```bash
+claude mcp add unity-editor-native -- "%USERPROFILE%\.unity\relay\relay_win.exe" --mcp
+```
+
+The catalog entry `unity-editor-native` documents the per-platform relay
+paths. The CoplayDev bridge above remains the pre-wired default (portable,
+Unity 2021.3+, larger tool catalog); pick one — don't run both against the
+same Editor session.
+
 ## Godot MCP (engine control)
 
 `godot-editor` is **pre-wired and portable** — it runs straight from npm via

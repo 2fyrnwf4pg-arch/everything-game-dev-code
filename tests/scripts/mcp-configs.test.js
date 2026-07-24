@@ -97,4 +97,25 @@ assert.ok(
   'codex.toml should carry unreal-editor as a url-based server'
 );
 
+// --- catalog: Unity's native in-editor MCP is documented as an alternative ---
+// Its relay binary lives under the user's home directory (per-user, per-platform
+// path), so it must stay a placeholder entry: documented in the catalog but never
+// emitted into the committed configs (the CoplayDev bridge remains the pre-wired
+// default).
+const unityNative = registry.servers['unity-editor-native'];
+assert.ok(unityNative, "catalog should define a 'unity-editor-native' server");
+assert.deepStrictEqual(unityNative.args, ['--mcp'], 'the Unity relay must be launched with --mcp');
+assert.ok(
+  isPlaceholderValue(unityNative.command),
+  'unity-editor-native command must stay a per-machine placeholder'
+);
+assert.ok(
+  !('unity-editor-native' in universal.mcpServers),
+  'placeholder servers must not leak into .mcp.json'
+);
+
+function isPlaceholderValue(value) {
+  return typeof value === 'string' && value.includes('<') && value.includes('>');
+}
+
 console.log('PASS scripts/mcp-configs.test.js');

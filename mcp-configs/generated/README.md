@@ -61,4 +61,4 @@ These catalog entries still use a `<your-...-command>` placeholder, so they are
 intentionally **not** emitted here — give them a real command in
 [../mcp-servers.json](../mcp-servers.json) and re-run `npm run sync:mcp`:
 
-`ci-builds`, `fetch-docs`, `filesystem`, `git`, `github`, `godot-docs`, `issue-tracker`, `ripgrep`, `storefront-docs`, `telemetry`, `unity-docs`, `unity-package-registry`, `unreal-docs`, `unreal-editor-community`
+`ci-builds`, `fetch-docs`, `filesystem`, `git`, `github`, `godot-docs`, `issue-tracker`, `ripgrep`, `storefront-docs`, `telemetry`, `unity-docs`, `unity-editor-native`, `unity-package-registry`, `unreal-docs`, `unreal-editor-community`
