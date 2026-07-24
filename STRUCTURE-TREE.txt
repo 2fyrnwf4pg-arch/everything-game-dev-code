@@ -1477,6 +1477,7 @@ everything-game-dev-code
 │   ├── schemas
 │   │   └── manifests-schema.test.js
 │   ├── scripts
+│   │   ├── mcp-configs.test.js
 │   │   ├── new-engine.test.js
 │   │   └── setup-profile.test.js
 │   ├── README.md
