@@ -429,6 +429,9 @@ everything-game-dev-code
 │   │   └── TimelineSlotChangeResult.cs
 │   ├── Level
 │   │   └── LevelDefinition.cs
+│   ├── Persistence
+│   │   ├── GameSaveException.cs
+│   │   └── GameSaveFormat.cs
 │   ├── Solver
 │   │   └── SudokuSolver.cs
 │   ├── Sudoku
@@ -1495,6 +1498,10 @@ everything-game-dev-code
 │   │   └── README.md
 │   └── README.md
 ├── Tests
+│   ├── Determinism
+│   │   └── ReplayTests.cs
+│   ├── Diagnostics
+│   │   └── StateSummaryTests.cs
 │   ├── Fixtures
 │   │   ├── Levels.cs
 │   │   └── Puzzles.cs
@@ -1507,6 +1514,8 @@ everything-game-dev-code
 │   │   └── VictoryTests.cs
 │   ├── Level
 │   │   └── LevelDefinitionTests.cs
+│   ├── Persistence
+│   │   └── GameSaveFormatTests.cs
 │   ├── Scenarios
 │   │   ├── MultiTimelineSessionTests.cs
 │   │   ├── NineByNineScenarioTests.cs
@@ -1556,8 +1565,10 @@ everything-game-dev-code
 │   └── run-all.js
 ├── Tools
 │   └── ScenarioRunner
+│       ├── DemoScenario.cs
 │       ├── Program.cs
-│       └── ScenarioRunner.csproj
+│       ├── ScenarioRunner.csproj
+│       └── StateSummary.cs
 ├── .env.example
 ├── .gitignore
 ├── .markdownlint.json
