@@ -16,11 +16,11 @@ anything first.
 
 1. **Unity Hub → Add → Add project from disk →** pick `Unity/FiveDSudoku`.
 
-2. **Version.** `ProjectSettings/ProjectVersion.txt` currently asks for a
-   placeholder version. Set it to the LTS you have installed:
+2. **Version.** The project asks for **6000.5.9f1**. To move it to a different
+   editor:
 
    ```
-   Unity/set-unity-version.sh 6000.0.32f1
+   Unity/set-unity-version.sh <version>
    ```
 
    Opening with a different editor works too — Unity offers to upgrade and
@@ -106,9 +106,6 @@ hosting it. Keep it small.
 These were listed in `UNITY-PHASES.md` as U0 decisions and still need making,
 because they depend on what is installed and on design intent:
 
-- **Unity LTS version.** `ProjectVersion.txt` holds a placeholder until this is
-  settled — see `set-unity-version.sh` above. Hard requirement: API
-  Compatibility Level .NET Standard 2.1.
 - **Render pipeline** (URP recommended) — add the package when U1 needs it.
 - **Input** (Input System recommended) — add the package when U2 needs it.
 - **UI approach** (UI Toolkit for menus, sprites or mesh for the board).

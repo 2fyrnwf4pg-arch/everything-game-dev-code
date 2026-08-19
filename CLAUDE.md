@@ -94,6 +94,9 @@ actually unworkable, stop and say so explicitly instead of quietly changing it.
   `Unity/build-core-dll.sh` into `Assets/Plugins/FiveDSudoku/`. Do not copy
   `Core` sources under `Assets/`, and do not lower `Core` to C# 9 to make that
   possible — the assembly is the interface.
+- **The Unity editor is 6000.5.9f1**, recorded in
+  `Unity/FiveDSudoku/ProjectSettings/ProjectVersion.txt`. Change it through
+  `Unity/set-unity-version.sh` so the file stays the single place that says so.
 - **The Unity project's API Compatibility Level is .NET Standard 2.1.** Anything
   lower and the core will not load. An EditMode test guards it.
 - **`dotnet test` stays the authoritative suite.** The Unity EditMode tests are a
