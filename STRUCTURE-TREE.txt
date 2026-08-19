@@ -438,6 +438,13 @@ everything-game-dev-code
 │   │   ├── Timeline.cs
 │   │   ├── TimelineClassifier.cs
 │   │   └── TimelineStatus.cs
+│   ├── Validation
+│   │   ├── GameInvariant.cs
+│   │   ├── GameInvariants.cs
+│   │   ├── InvariantViolation.cs
+│   │   ├── LevelValidationCheck.cs
+│   │   ├── LevelValidationReport.cs
+│   │   └── LevelValidator.cs
 │   └── Core.csproj
 ├── docs
 │   ├── orchestration
@@ -1505,6 +1512,7 @@ everything-game-dev-code
 │   │   ├── ScenarioATests.cs
 │   │   ├── ScenarioBTests.cs
 │   │   ├── ScenarioCTests.cs
+│   │   ├── ScenarioDTests.cs
 │   │   └── ScenarioETests.cs
 │   ├── Solver
 │   │   └── SudokuSolverTests.cs
@@ -1514,6 +1522,9 @@ everything-game-dev-code
 │   ├── Timeline
 │   │   ├── TimelineClassifierTests.cs
 │   │   └── TimelineTests.cs
+│   ├── Validation
+│   │   ├── GameInvariantsTests.cs
+│   │   └── LevelValidatorTests.cs
 │   ├── ApiSurfaceTests.cs
 │   ├── SkeletonTests.cs
 │   └── Tests.csproj
