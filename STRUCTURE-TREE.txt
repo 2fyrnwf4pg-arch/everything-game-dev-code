@@ -1498,6 +1498,10 @@ everything-game-dev-code
 │   │   └── README.md
 │   └── README.md
 ├── Tests
+│   ├── Acceptance
+│   │   ├── AcceptanceCriteriaTests.cs
+│   │   ├── AcceptanceReportTests.cs
+│   │   └── ForbiddenContentTests.cs
 │   ├── Determinism
 │   │   └── ReplayTests.cs
 │   ├── Diagnostics
