@@ -374,31 +374,57 @@ public sealed class GameState
     /// Checks whether an inactive timeline can be brought into play without doing
     /// it, and reports what stands in the way.
     /// </summary>
-    public TimelineActivationRejection ValidateActivation(int timelineId)
+    public TimelineSlotChangeRejection ValidateActivation(int timelineId)
     {
         if (Outcome == GameOutcome.Won)
         {
-            return TimelineActivationRejection.RunAlreadyWon;
+            return TimelineSlotChangeRejection.RunAlreadyWon;
         }
 
         Timeline? timeline = FindTimeline(timelineId);
 
         if (timeline is null)
         {
-            return TimelineActivationRejection.TimelineNotFound;
+            return TimelineSlotChangeRejection.TimelineNotFound;
         }
 
         if (timeline.Status != TimelineStatus.Inactive)
         {
-            return TimelineActivationRejection.TimelineNotInactive;
+            return TimelineSlotChangeRejection.TimelineNotInactive;
         }
 
         if (FreeActiveSlots <= 0)
         {
-            return TimelineActivationRejection.NoFreeActiveSlot;
+            return TimelineSlotChangeRejection.NoFreeActiveSlot;
         }
 
-        return TimelineActivationRejection.None;
+        return TimelineSlotChangeRejection.None;
+    }
+
+    /// <summary>
+    /// Checks whether an active timeline can be parked without doing it, and
+    /// reports what stands in the way.
+    /// </summary>
+    public TimelineSlotChangeRejection ValidateDeactivation(int timelineId)
+    {
+        if (Outcome == GameOutcome.Won)
+        {
+            return TimelineSlotChangeRejection.RunAlreadyWon;
+        }
+
+        Timeline? timeline = FindTimeline(timelineId);
+
+        if (timeline is null)
+        {
+            return TimelineSlotChangeRejection.TimelineNotFound;
+        }
+
+        if (timeline.Status != TimelineStatus.Active)
+        {
+            return TimelineSlotChangeRejection.TimelineNotActive;
+        }
+
+        return TimelineSlotChangeRejection.None;
     }
 
     /// <summary>
@@ -408,13 +434,13 @@ public sealed class GameState
     ///
     /// Costs no temporal budget: this is a management action, not a move.
     /// </summary>
-    public TimelineActivationResult ActivateTimeline(int timelineId)
+    public TimelineSlotChangeResult ActivateTimeline(int timelineId)
     {
-        TimelineActivationRejection rejection = ValidateActivation(timelineId);
+        TimelineSlotChangeRejection rejection = ValidateActivation(timelineId);
 
-        if (rejection != TimelineActivationRejection.None)
+        if (rejection != TimelineSlotChangeRejection.None)
         {
-            return TimelineActivationResult.Refused(rejection, this);
+            return TimelineSlotChangeResult.Refused(rejection, this);
         }
 
         Timeline timeline = GetTimeline(timelineId);
@@ -422,7 +448,40 @@ public sealed class GameState
 
         Timeline[] updated = ReplaceTimeline(timeline.WithStatusAndSlot(status, occupiesActiveSlot: true));
 
-        return TimelineActivationResult.Activated(
+        return TimelineSlotChangeResult.Applied(
+            new GameState(Level, updated, SelectedTimelineId, RemainingTemporalBudget));
+    }
+
+    /// <summary>
+    /// Parks an active timeline: it gives up its slot and becomes inactive, so
+    /// another timeline can take the slot instead. The counterpart to
+    /// <see cref="ActivateTimeline"/>, and the only way to free a slot without
+    /// waiting for a timeline to die.
+    ///
+    /// A parked timeline keeps its whole history and can be inspected and switched
+    /// to, but stops counting towards the present and cannot be played. Costs no
+    /// temporal budget.
+    ///
+    /// Parking is not free of consequence. Bringing a timeline back in classifies
+    /// it, which ordinary play never does, so a line that was quietly doomed all
+    /// along comes back dead rather than active. Deciding to park something is
+    /// therefore a real decision and not a costless toggle.
+    /// </summary>
+    public TimelineSlotChangeResult DeactivateTimeline(int timelineId)
+    {
+        TimelineSlotChangeRejection rejection = ValidateDeactivation(timelineId);
+
+        if (rejection != TimelineSlotChangeRejection.None)
+        {
+            return TimelineSlotChangeResult.Refused(rejection, this);
+        }
+
+        Timeline timeline = GetTimeline(timelineId);
+
+        Timeline[] updated = ReplaceTimeline(
+            timeline.WithStatusAndSlot(TimelineStatus.Inactive, occupiesActiveSlot: false));
+
+        return TimelineSlotChangeResult.Applied(
             new GameState(Level, updated, SelectedTimelineId, RemainingTemporalBudget));
     }
 

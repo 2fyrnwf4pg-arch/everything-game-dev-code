@@ -1492,6 +1492,7 @@ everything-game-dev-code
 │   │   ├── Levels.cs
 │   │   └── Puzzles.cs
 │   ├── Game
+│   │   ├── ActiveSlotTests.cs
 │   │   ├── GameStateTests.cs
 │   │   ├── PresentTests.cs
 │   │   ├── TemporalMoveTests.cs
@@ -1499,8 +1500,11 @@ everything-game-dev-code
 │   ├── Level
 │   │   └── LevelDefinitionTests.cs
 │   ├── Scenarios
+│   │   ├── MultiTimelineSessionTests.cs
 │   │   ├── ScenarioATests.cs
-│   │   └── ScenarioCTests.cs
+│   │   ├── ScenarioBTests.cs
+│   │   ├── ScenarioCTests.cs
+│   │   └── ScenarioETests.cs
 │   ├── Solver
 │   │   └── SudokuSolverTests.cs
 │   ├── Sudoku

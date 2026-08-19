@@ -577,6 +577,43 @@ history actually ended. While a PRESENT exists, neither condition changes.
 *Tests:* `WithNoPresentTheWindowIsMeasuredFromTheSourceTimelinesOwnFrontier`,
 `AnAbsentPresentDoesNotByItselfSayHowTheRunEnded`.
 
+### D4 — Deactivating a timeline (defined during Phase 4, for Phase 6)
+
+Phase 6's stress tests call for "activate/deactivate timelines when legal", but
+no phase defines what deactivation is. It is defined here.
+
+**Deactivation parks an ACTIVE timeline.** It gives up its active slot and
+becomes `INACTIVE`, so another timeline can take the slot. It is the counterpart
+to activation and the only way to free a slot without waiting for a timeline to
+die.
+
+A deactivation is legal only when:
+1. the run is not already won;
+2. the timeline exists;
+3. the timeline is currently `ACTIVE`. A `DEAD` timeline holds no slot to give
+   up, a `SOLVED` one has already decided the level, and an `INACTIVE` one has
+   already given its slot up.
+
+Consequences, all of which follow from rules that already exist:
+- A parked timeline keeps its whole history, stays inspectable and selectable,
+  stops counting towards PRESENT, and cannot be played (§9).
+- Deactivation costs no temporal budget: like switching and activation, it is a
+  management action, not a move (§10).
+- **Parking is not free of consequence.** Bringing a timeline back in classifies
+  it (§7), which ordinary play deliberately does not (D2). A line that was
+  quietly doomed all along therefore comes back `DEAD` rather than `ACTIVE`.
+  Parking is a real decision, not a costless toggle.
+- Parking the last playable timeline makes the run `GameOver`, which is not
+  terminal (D1) — activating it again brings the run back.
+
+*Why deactivation is needed at all:* without it a slot only frees up when a
+timeline dies, so a run that branches early and never loses a timeline can never
+use a parked branch at all. It is also the counter to a laggard timeline pinning
+PRESENT: park it, advance the others, bring it back later.
+
+*Tests:* `TimelineDeactivationTests`, and the round trip in
+`ParkingAndBringingBackATimelineRevealsThatItWasDoomed`.
+
 ---
 
 ## Reference: original design note

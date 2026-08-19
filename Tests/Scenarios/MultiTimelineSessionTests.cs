@@ -61,7 +61,7 @@ public sealed class MultiTimelineSessionTests
         Assert.That(game.GetTimeline(branchId).IsCapableOfFurtherPlay, Is.False);
 
         // 5. Now the parked branch can be brought in.
-        TimelineActivationResult activated = game.ActivateTimeline(branchId);
+        TimelineSlotChangeResult activated = game.ActivateTimeline(branchId);
 
         Assert.That(activated.Succeeded, Is.True, activated.Rejection.ToString());
 

@@ -111,7 +111,7 @@ public sealed class ScenarioETests
         {
             Assert.That(
                 game3.ActivateTimeline(id).Rejection,
-                Is.EqualTo(TimelineActivationRejection.NoFreeActiveSlot),
+                Is.EqualTo(TimelineSlotChangeRejection.NoFreeActiveSlot),
                 $"L{id}");
             Assert.That(
                 game3.SelectTimeline(id).PlaceValue(3, 3, 4).Rejection,

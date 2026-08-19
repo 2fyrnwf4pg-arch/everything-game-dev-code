@@ -172,7 +172,7 @@ public sealed class ActiveSlotTests
         Assert.That(result.State.FreeActiveSlots, Is.EqualTo(0));
         Assert.That(
             result.State.ActivateTimeline(branchId).Rejection,
-            Is.EqualTo(TimelineActivationRejection.NoFreeActiveSlot));
+            Is.EqualTo(TimelineSlotChangeRejection.NoFreeActiveSlot));
     }
 
     [Test]
@@ -182,7 +182,7 @@ public sealed class ActiveSlotTests
 
         Assert.That(
             game.ActivateTimeline(GameState.RootTimelineId).Rejection,
-            Is.EqualTo(TimelineActivationRejection.TimelineNotInactive));
+            Is.EqualTo(TimelineSlotChangeRejection.TimelineNotInactive));
     }
 
     [Test]
@@ -190,7 +190,7 @@ public sealed class ActiveSlotTests
     {
         Assert.That(
             StartSparse(maxActiveTimelines: 2).ActivateTimeline(77).Rejection,
-            Is.EqualTo(TimelineActivationRejection.TimelineNotFound));
+            Is.EqualTo(TimelineSlotChangeRejection.TimelineNotFound));
     }
 
     [Test]
@@ -198,7 +198,7 @@ public sealed class ActiveSlotTests
     {
         GameState game = StartSparse(maxActiveTimelines: 2);
 
-        TimelineActivationResult result = game.ActivateTimeline(GameState.RootTimelineId);
+        TimelineSlotChangeResult result = game.ActivateTimeline(GameState.RootTimelineId);
 
         Assert.That(result.Succeeded, Is.False);
         Assert.That(result.State, Is.SameAs(game));
@@ -213,7 +213,7 @@ public sealed class ActiveSlotTests
         Assert.That(game.FreeActiveSlots, Is.EqualTo(1), "the dead root gave its slot back");
 
         int budgetBefore = game.RemainingTemporalBudget;
-        TimelineActivationResult activated = game.ActivateTimeline(branchId);
+        TimelineSlotChangeResult activated = game.ActivateTimeline(branchId);
 
         Assert.That(activated.Succeeded, Is.True, activated.Rejection.ToString());
         Assert.That(activated.State.RemainingTemporalBudget, Is.EqualTo(budgetBefore));
@@ -267,7 +267,7 @@ public sealed class ActiveSlotTests
         Assert.That(game.GetTimeline(GameState.RootTimelineId).Status, Is.EqualTo(TimelineStatus.Dead));
         Assert.That(game.FreeActiveSlots, Is.EqualTo(1));
 
-        TimelineActivationResult activated = game.ActivateTimeline(branchId);
+        TimelineSlotChangeResult activated = game.ActivateTimeline(branchId);
 
         Assert.That(activated.Succeeded, Is.True, activated.Rejection.ToString());
 
@@ -314,6 +314,6 @@ public sealed class ActiveSlotTests
 
         Assert.That(
             won.ActivateTimeline(GameState.RootTimelineId).Rejection,
-            Is.EqualTo(TimelineActivationRejection.RunAlreadyWon));
+            Is.EqualTo(TimelineSlotChangeRejection.RunAlreadyWon));
     }
 }
