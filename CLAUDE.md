@@ -57,6 +57,35 @@ dimensions. Row/column/box constraints are always local to a single
   make the smallest necessary rule change. Never silently work around a
   contradiction.
 
+## Fixed technical decisions
+
+These were decided in Phase 0 and are **settled**. Treat them like the
+non-negotiable constraints above: follow them in every phase, and do not
+re-open them, re-argue them, or swap them out for a "more convenient"
+alternative mid-phase. If a phase produces hard evidence that one of them is
+actually unworkable, stop and say so explicitly instead of quietly changing it.
+
+- **`Core/` targets `netstandard2.1`.** This is what keeps the library
+  embeddable in Unity later without a rewrite. Do not retarget `Core` to
+  `net8.0` or any other framework, and do not add dependencies that are
+  unavailable on `netstandard2.1` (for example `System.Collections.Immutable`
+  is not available without an extra package — use plain arrays and defensive
+  copies instead).
+- **`Core/Compatibility/IsExternalInit.cs` stays.** `netstandard2.1` predates
+  C# 9, so without this shim the compiler cannot emit `init` accessors or
+  positional `record` types — which the immutability constraint depends on.
+  It is a compiler-support shim, not game logic. Do not delete it, and do not
+  "fix" the underlying error by retargeting the project.
+- **`Tests/` uses NUnit** (`NUnit` + `NUnit3TestAdapter`, run via
+  `dotnet test`). Every phase adds its tests to this project in NUnit style
+  (`[TestFixture]`, `[Test]`, `[TestCase]`, `Assert.That(...)`). Do not
+  introduce xUnit, MSTest, or a second test framework alongside it.
+- **`Tests/` and `Tools/ScenarioRunner/` target `net8.0`.** Only `Core` is
+  constrained to `netstandard2.1`; the test and tooling projects are free to
+  use the current runtime.
+- **Warnings are errors** (`TreatWarningsAsErrors`) and nullable reference
+  types are enabled in all three projects. Fix the cause, don't suppress it.
+
 ## Explicitly NOT part of this phase
 
 Do not implement, even if it seems convenient: multiplayer, online

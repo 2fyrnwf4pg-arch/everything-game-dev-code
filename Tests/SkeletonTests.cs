@@ -5,30 +5,30 @@ using System.Reflection;
 namespace FiveDSudoku.Tests;
 
 /// <summary>
-/// Phase 0 placeholder tests. These prove the build/test pipeline works end to
-/// end and guard the two structural constraints from CLAUDE.md that are already
-/// meaningful with an empty solution. No game rules are asserted here — those
-/// arrive with Phase 1.
+/// Structural tests introduced in Phase 0. They prove the build/test pipeline
+/// works end to end and guard the constraints from CLAUDE.md that hold for the
+/// whole project, independently of any game rule.
 /// </summary>
+[TestFixture]
 public sealed class SkeletonTests
 {
     private const string CoreAssemblyName = "FiveDSudoku.Core";
 
-    [Fact]
+    [Test]
     public void TestPipelineRuns()
     {
-        Assert.True(true);
+        Assert.Pass();
     }
 
-    [Fact]
+    [Test]
     public void CoreAssemblyLoadsFromTheTestHost()
     {
         Assembly core = LoadCore();
 
-        Assert.Equal(CoreAssemblyName, core.GetName().Name);
+        Assert.That(core.GetName().Name, Is.EqualTo(CoreAssemblyName));
     }
 
-    [Fact]
+    [Test]
     public void CoreHasNoUnityDependency()
     {
         string[] unityReferences = LoadCore()
@@ -37,7 +37,17 @@ public sealed class SkeletonTests
             .Where(IsUnityAssembly)
             .ToArray();
 
-        Assert.Empty(unityReferences);
+        Assert.That(unityReferences, Is.Empty);
+    }
+
+    [Test]
+    public void CoreTargetsNetStandard21()
+    {
+        string? targetFramework = LoadCore()
+            .GetCustomAttribute<System.Runtime.Versioning.TargetFrameworkAttribute>()
+            ?.FrameworkName;
+
+        Assert.That(targetFramework, Is.EqualTo(".NETStandard,Version=v2.1"));
     }
 
     private static Assembly LoadCore() => Assembly.Load(new AssemblyName(CoreAssemblyName));
