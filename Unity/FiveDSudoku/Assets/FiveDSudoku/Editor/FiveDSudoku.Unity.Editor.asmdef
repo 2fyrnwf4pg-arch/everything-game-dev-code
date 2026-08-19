@@ -1,0 +1,20 @@
+{
+    "name": "FiveDSudoku.Unity.Editor",
+    "rootNamespace": "FiveDSudoku.Unity.Editor",
+    "references": [
+        "FiveDSudoku.Unity.Game"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "FiveDSudoku.Core.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

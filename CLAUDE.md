@@ -86,6 +86,24 @@ actually unworkable, stop and say so explicitly instead of quietly changing it.
 - **Warnings are errors** (`TreatWarningsAsErrors`) and nullable reference
   types are enabled in all three projects. Fix the cause, don't suppress it.
 
+### Settled in U0, for the Unity milestone
+
+- **Unity never compiles `Core/` from source.** `Core` is C# 10 (file-scoped
+  namespaces) and Unity's compiler is C# 9, so the source does not compile there.
+  Unity gets the built `netstandard2.1` assembly, produced by
+  `Unity/build-core-dll.sh` into `Assets/Plugins/FiveDSudoku/`. Do not copy
+  `Core` sources under `Assets/`, and do not lower `Core` to C# 9 to make that
+  possible — the assembly is the interface.
+- **The Unity project's API Compatibility Level is .NET Standard 2.1.** Anything
+  lower and the core will not load. An EditMode test guards it.
+- **`dotnet test` stays the authoritative suite.** The Unity EditMode tests are a
+  deliberately small smoke subset whose job is to show the core behaves the same
+  inside Unity's runtime — not to re-prove the rules. Keep them small, and keep
+  them written to C# 9, netstandard2.1 and NUnit 3, which is what Unity has.
+- **The UI layer holds no game rules.** It calls into `Core` and renders what it
+  gets back. A rule the UI seems to need is a finding for `PHASES.md`, not
+  something to add to a MonoBehaviour.
+
 ## Explicitly NOT part of this phase
 
 Do not implement, even if it seems convenient: multiplayer, online

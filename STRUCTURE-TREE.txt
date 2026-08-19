@@ -1573,6 +1573,34 @@ everything-game-dev-code
 │       ├── Program.cs
 │       ├── ScenarioRunner.csproj
 │       └── StateSummary.cs
+├── Unity
+│   ├── FiveDSudoku
+│   │   ├── Assets
+│   │   │   ├── FiveDSudoku
+│   │   │   │   ├── Editor
+│   │   │   │   │   └── FiveDSudoku.Unity.Editor.asmdef
+│   │   │   │   ├── Runtime
+│   │   │   │   │   └── FiveDSudoku.Unity.Game.asmdef
+│   │   │   │   └── Tests
+│   │   │   │       └── EditMode
+│   │   │   │           ├── CoreSmokeTests.cs
+│   │   │   │           ├── FiveDSudoku.Unity.Tests.EditMode.asmdef
+│   │   │   │           └── ProjectSetupTests.cs
+│   │   │   └── Plugins
+│   │   │       └── FiveDSudoku
+│   │   │           ├── core-source.sha256
+│   │   │           ├── FiveDSudoku.Core.dll
+│   │   │           └── FiveDSudoku.Core.pdb
+│   │   ├── Packages
+│   │   │   └── manifest.json
+│   │   └── .gitignore
+│   ├── Verification
+│   │   ├── CompileCheck
+│   │   │   └── UnityCompileCheck.csproj
+│   │   └── RunCheck
+│   │       └── UnityRunCheck.csproj
+│   ├── build-core-dll.sh
+│   └── README.md
 ├── .env.example
 ├── .gitignore
 ├── .markdownlint.json
@@ -1593,4 +1621,5 @@ everything-game-dev-code
 ├── SECURITY.md
 ├── STRUCTURE-TREE.txt
 ├── TROUBLESHOOTING.md
+├── UNITY-PHASES.md
 └── VERSION

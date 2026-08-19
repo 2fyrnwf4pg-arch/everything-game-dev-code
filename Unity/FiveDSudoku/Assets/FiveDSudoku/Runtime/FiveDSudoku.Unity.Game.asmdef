@@ -1,0 +1,16 @@
+{
+    "name": "FiveDSudoku.Unity.Game",
+    "rootNamespace": "FiveDSudoku.Unity",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "FiveDSudoku.Core.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
