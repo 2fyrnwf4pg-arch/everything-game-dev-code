@@ -136,6 +136,16 @@ public sealed class SudokuSolverTests
     // ---- the produced solutions are actually solutions -------------------
 
     [Test]
+    public void FirstSolutionOfTheFourByFourPuzzleIsTheKnownSolution()
+    {
+        SudokuBoard puzzle = SudokuBoard.Parse(BoardSize.FourByFour, Puzzles.Unique4);
+        SudokuBoard expected = SudokuBoard.Parse(BoardSize.FourByFour, Puzzles.Unique4Solution);
+
+        Assert.That(expected.IsSolved(), Is.True);
+        Assert.That(SudokuSolver.FindFirstSolution(puzzle), Is.EqualTo(expected));
+    }
+
+    [Test]
     public void FirstSolutionOfTheNineByNinePuzzleIsTheKnownSolution()
     {
         SudokuBoard puzzle = SudokuBoard.Parse(BoardSize.NineByNine, Puzzles.Unique9);

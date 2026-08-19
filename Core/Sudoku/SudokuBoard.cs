@@ -274,6 +274,39 @@ public sealed class SudokuBoard : IEquatable<SudokuBoard>
     /// <summary>True when the board is both complete and free of violations.</summary>
     public bool IsSolved() => IsComplete && IsValid();
 
+    /// <summary>
+    /// True when at least one legal placement exists anywhere on the board.
+    ///
+    /// This is a local question about what a player could do next, not a claim that
+    /// the board can be completed: a board can offer legal placements and still have
+    /// no solution.
+    /// </summary>
+    public bool HasAnyLegalPlacement()
+    {
+        int side = Size.Side;
+
+        for (int row = 0; row < side; row++)
+        {
+            for (int column = 0; column < side; column++)
+            {
+                if (_cells[Size.CellIndex(row, column)] != BoardSize.EmptyCell)
+                {
+                    continue;
+                }
+
+                for (int value = Size.MinValue; value <= Size.MaxValue; value++)
+                {
+                    if (!ConflictsWithPeers(row, column, value))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     /// <summary>Row-major copy of the cell values.</summary>
     public int[] ToArray() => (int[])_cells.Clone();
 

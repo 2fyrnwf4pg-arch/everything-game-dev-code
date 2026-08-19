@@ -31,6 +31,15 @@ internal static class Puzzles
         ..|.3
         """;
 
+    /// <summary>The one solution of <see cref="Unique4"/>.</summary>
+    internal const string Unique4Solution = """
+        14|32
+        23|14
+        --+--
+        32|41
+        41|23
+        """;
+
     /// <summary>
     /// 4x4 puzzle that breaks no constraint yet cannot be completed: the top-left
     /// cell is excluded from 1 and 4 by its box, from 2 by its row, and from 3 by
@@ -66,6 +75,32 @@ internal static class Puzzles
         --+--
         ..|..
         ..|..
+        """;
+
+    /// <summary>
+    /// A valid but stuck 4x4 board: every empty cell has all four values among its
+    /// row, column and box, so no legal placement exists anywhere. Reached by legal
+    /// placements only, so it is a position ordinary play can actually walk into.
+    /// </summary>
+    internal const string Blocked4 = """
+        41|23
+        3.|41
+        --+--
+        13|.4
+        .2|1.
+        """;
+
+    /// <summary>
+    /// <see cref="Blocked4"/> with r0c0 cleared. Playing 4 there is legal and turns
+    /// the board into the stuck one, so a run can be driven into a dead end through
+    /// the ordinary move API.
+    /// </summary>
+    internal const string AlmostBlocked4 = """
+        .1|23
+        3.|41
+        --+--
+        13|.4
+        .2|1.
         """;
 
     // ---- 9x9 (3x3 boxes) -------------------------------------------------

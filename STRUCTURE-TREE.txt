@@ -418,12 +418,11 @@ everything-game-dev-code
 ├── Core
 │   ├── Compatibility
 │   │   └── IsExternalInit.cs
-│   ├── Game
-│   │   └── .gitkeep
-│   ├── Level
-│   │   └── .gitkeep
-│   ├── Timeline
-│   │   └── .gitkeep
+│   ├── Solver
+│   │   └── SudokuSolver.cs
+│   ├── Sudoku
+│   │   ├── BoardSize.cs
+│   │   └── SudokuBoard.cs
 │   ├── Validation
 │   │   └── .gitkeep
 │   └── Core.csproj
@@ -1476,6 +1475,13 @@ everything-game-dev-code
 │   │   └── README.md
 │   └── README.md
 ├── Tests
+│   ├── Fixtures
+│   │   └── Puzzles.cs
+│   ├── Solver
+│   │   └── SudokuSolverTests.cs
+│   ├── Sudoku
+│   │   ├── BoardSizeTests.cs
+│   │   └── SudokuBoardTests.cs
 │   ├── SkeletonTests.cs
 │   └── Tests.csproj
 ├── tests
