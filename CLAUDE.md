@@ -105,6 +105,7 @@ Core/
   Level/
   Solver/
   Validation/
+  Persistence/
 
 Tests/
 

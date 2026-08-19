@@ -162,6 +162,33 @@ public sealed class Timeline
             occupiesActiveSlot);
     }
 
+    /// <summary>
+    /// Rebuilds a timeline from a save. Only persistence uses this: it is the one
+    /// path that legitimately produces a timeline in the middle of its life rather
+    /// than at its start, so it takes every field as read.
+    /// </summary>
+    internal static Timeline Restore(
+        int id,
+        int? parentId,
+        int? branchTime,
+        int firstStateTime,
+        SudokuBoard[] states,
+        TimelineStatus status,
+        bool occupiesActiveSlot)
+    {
+        if (states is null)
+        {
+            throw new ArgumentNullException(nameof(states));
+        }
+
+        if (states.Length == 0)
+        {
+            throw new ArgumentException("A timeline needs at least one state.", nameof(states));
+        }
+
+        return new Timeline(id, parentId, branchTime, firstStateTime, states, status, occupiesActiveSlot);
+    }
+
     /// <summary>True when this timeline holds a state at <paramref name="time"/>.</summary>
     public bool ContainsTime(int time) => time >= FirstStateTime && time <= FrontierTime;
 

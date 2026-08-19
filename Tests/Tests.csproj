@@ -29,6 +29,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj" />
+
+    <!-- The diagnostics live in the tool, per the agreed layout, so the tests
+         that pin their output down have to reach into it. -->
+    <ProjectReference Include="..\Tools\ScenarioRunner\ScenarioRunner.csproj" />
   </ItemGroup>
 
 </Project>

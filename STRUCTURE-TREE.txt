@@ -1509,6 +1509,7 @@ everything-game-dev-code
 │   │   └── LevelDefinitionTests.cs
 │   ├── Scenarios
 │   │   ├── MultiTimelineSessionTests.cs
+│   │   ├── NineByNineScenarioTests.cs
 │   │   ├── ScenarioATests.cs
 │   │   ├── ScenarioBTests.cs
 │   │   ├── ScenarioCTests.cs
@@ -1516,6 +1517,12 @@ everything-game-dev-code
 │   │   └── ScenarioETests.cs
 │   ├── Solver
 │   │   └── SudokuSolverTests.cs
+│   ├── Stress
+│   │   ├── PuzzleGenerator.cs
+│   │   ├── RandomizedScenarioTests.cs
+│   │   ├── RandomPlaySession.cs
+│   │   ├── StressSeeds.cs
+│   │   └── StressTests.cs
 │   ├── Sudoku
 │   │   ├── BoardSizeTests.cs
 │   │   └── SudokuBoardTests.cs

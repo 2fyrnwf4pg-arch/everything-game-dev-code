@@ -310,6 +310,24 @@ public sealed class SudokuBoard : IEquatable<SudokuBoard>
     /// <summary>Row-major copy of the cell values.</summary>
     public int[] ToArray() => (int[])_cells.Clone();
 
+    /// <summary>
+    /// The grid as one line of characters, with no separators and <c>.</c> for an
+    /// empty cell. Round-trips through <see cref="Parse"/>, which makes it the form
+    /// to use wherever a board has to be written down — a save file, a log line, a
+    /// state to compare against another.
+    /// </summary>
+    public string ToCompactString()
+    {
+        StringBuilder builder = new StringBuilder(_cells.Length);
+
+        for (int index = 0; index < _cells.Length; index++)
+        {
+            builder.Append(FormatCell(_cells[index]));
+        }
+
+        return builder.ToString();
+    }
+
     public bool Equals(SudokuBoard? other)
     {
         if (other is null)

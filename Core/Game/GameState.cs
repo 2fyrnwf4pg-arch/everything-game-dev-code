@@ -115,6 +115,35 @@ public sealed class GameState
     /// <summary>Id the root timeline always has.</summary>
     public const int RootTimelineId = 0;
 
+    /// <summary>
+    /// Rebuilds a run from a save. The present and the outcome are not taken from
+    /// the save: they are recomputed here from the timelines, exactly as they are
+    /// during play, so a loaded run can never hold values the rules disagree with.
+    /// </summary>
+    internal static GameState Restore(
+        LevelDefinition level,
+        Timeline[] timelines,
+        int selectedTimelineId,
+        int remainingTemporalBudget)
+    {
+        if (level is null)
+        {
+            throw new ArgumentNullException(nameof(level));
+        }
+
+        if (timelines is null)
+        {
+            throw new ArgumentNullException(nameof(timelines));
+        }
+
+        if (timelines.Length == 0)
+        {
+            throw new ArgumentException("A run needs at least one timeline.", nameof(timelines));
+        }
+
+        return new GameState(level, timelines, selectedTimelineId, remainingTemporalBudget);
+    }
+
     /// <summary>The timeline with the given id.</summary>
     public Timeline GetTimeline(int timelineId)
     {
