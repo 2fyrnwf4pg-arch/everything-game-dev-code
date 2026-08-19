@@ -424,7 +424,9 @@ everything-game-dev-code
 │   │   ├── MoveRejection.cs
 │   │   ├── MoveResult.cs
 │   │   ├── TemporalMoveRejection.cs
-│   │   └── TemporalMoveResult.cs
+│   │   ├── TemporalMoveResult.cs
+│   │   ├── TimelineSlotChangeRejection.cs
+│   │   └── TimelineSlotChangeResult.cs
 │   ├── Level
 │   │   └── LevelDefinition.cs
 │   ├── Solver
@@ -436,8 +438,6 @@ everything-game-dev-code
 │   │   ├── Timeline.cs
 │   │   ├── TimelineClassifier.cs
 │   │   └── TimelineStatus.cs
-│   ├── Validation
-│   │   └── .gitkeep
 │   └── Core.csproj
 ├── docs
 │   ├── orchestration
@@ -1496,6 +1496,7 @@ everything-game-dev-code
 │   │   ├── GameStateTests.cs
 │   │   ├── PresentTests.cs
 │   │   ├── TemporalMoveTests.cs
+│   │   ├── TimelineDeactivationTests.cs
 │   │   └── VictoryTests.cs
 │   ├── Level
 │   │   └── LevelDefinitionTests.cs
