@@ -17,6 +17,10 @@ public sealed class LevelDefinition
     /// <param name="id">Stable identifier used for saves, replays and diagnostics.</param>
     /// <param name="startingBoard">The puzzle as the player first sees it.</param>
     /// <param name="temporalBudget">How many Temporal Moves the level grants in total.</param>
+    /// <param name="temporalWindow">
+    /// How far back a Temporal Move may reach from the present. A window of 0
+    /// grants no reach at all and so rules out branching entirely.
+    /// </param>
     /// <param name="maxActiveTimelines">
     /// How many timelines may hold an active slot at the same time. The root
     /// timeline occupies one of them, so this is at least 1.
@@ -29,6 +33,7 @@ public sealed class LevelDefinition
         string id,
         SudokuBoard startingBoard,
         int temporalBudget,
+        int temporalWindow,
         int maxActiveTimelines,
         int finalDepth)
     {
@@ -48,6 +53,12 @@ public sealed class LevelDefinition
                 nameof(temporalBudget), temporalBudget, "Temporal budget cannot be negative.");
         }
 
+        if (temporalWindow < 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(temporalWindow), temporalWindow, "Temporal window cannot be negative.");
+        }
+
         if (maxActiveTimelines < 1)
         {
             throw new ArgumentOutOfRangeException(
@@ -65,6 +76,7 @@ public sealed class LevelDefinition
         Id = id;
         StartingBoard = startingBoard;
         TemporalBudget = temporalBudget;
+        TemporalWindow = temporalWindow;
         MaxActiveTimelines = maxActiveTimelines;
         FinalDepth = finalDepth;
     }
@@ -78,6 +90,13 @@ public sealed class LevelDefinition
     /// <summary>Total number of Temporal Moves granted by this level.</summary>
     public int TemporalBudget { get; }
 
+    /// <summary>
+    /// How far back a Temporal Move may reach from the present. The engine never
+    /// permits an unbounded jump into history: a source time is only reachable when
+    /// <c>present - sourceTime</c> falls within this window.
+    /// </summary>
+    public int TemporalWindow { get; }
+
     /// <summary>Maximum number of timelines that may hold an active slot at once.</summary>
     public int MaxActiveTimelines { get; }
 
@@ -88,5 +107,6 @@ public sealed class LevelDefinition
     public BoardSize Size => StartingBoard.Size;
 
     public override string ToString() =>
-        $"{Id} ({Size}, budget {TemporalBudget}, {MaxActiveTimelines} active slots, final depth {FinalDepth})";
+        $"{Id} ({Size}, budget {TemporalBudget}, window {TemporalWindow}, " +
+        $"{MaxActiveTimelines} active slots, final depth {FinalDepth})";
 }

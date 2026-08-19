@@ -10,10 +10,12 @@ public sealed class LevelDefinitionTests
     [Test]
     public void LevelCarriesItsTuningNumbers()
     {
-        LevelDefinition level = Levels.SolvableFourByFour(temporalBudget: 5, maxActiveTimelines: 3, finalDepth: 20);
+        LevelDefinition level = Levels.SolvableFourByFour(
+            temporalBudget: 5, temporalWindow: 4, maxActiveTimelines: 3, finalDepth: 20);
 
         Assert.That(level.Id, Is.EqualTo("4x4-unique"));
         Assert.That(level.TemporalBudget, Is.EqualTo(5));
+        Assert.That(level.TemporalWindow, Is.EqualTo(4));
         Assert.That(level.MaxActiveTimelines, Is.EqualTo(3));
         Assert.That(level.FinalDepth, Is.EqualTo(20));
         Assert.That(level.Size, Is.EqualTo(BoardSize.FourByFour));
@@ -24,7 +26,7 @@ public sealed class LevelDefinitionTests
     public void LevelNeedsANonEmptyId(string id)
     {
         Assert.That(
-            () => new LevelDefinition(id, SudokuBoard.Empty(BoardSize.FourByFour), 1, 1, 1),
+            () => new LevelDefinition(id, SudokuBoard.Empty(BoardSize.FourByFour), 1, 1, 1, 1),
             Throws.ArgumentException);
     }
 
@@ -32,7 +34,7 @@ public sealed class LevelDefinitionTests
     public void LevelNeedsAStartingBoard()
     {
         Assert.That(
-            () => new LevelDefinition("id", null!, 1, 1, 1),
+            () => new LevelDefinition("id", null!, 1, 1, 1, 1),
             Throws.ArgumentNullException);
     }
 
@@ -40,7 +42,7 @@ public sealed class LevelDefinitionTests
     public void TemporalBudgetCannotBeNegative()
     {
         Assert.That(
-            () => new LevelDefinition("id", SudokuBoard.Empty(BoardSize.FourByFour), -1, 1, 1),
+            () => new LevelDefinition("id", SudokuBoard.Empty(BoardSize.FourByFour), -1, 1, 1, 1),
             Throws.InstanceOf<ArgumentOutOfRangeException>());
     }
 
@@ -48,7 +50,23 @@ public sealed class LevelDefinitionTests
     public void ZeroTemporalBudgetIsAllowed()
     {
         Assert.That(
-            () => new LevelDefinition("id", SudokuBoard.Empty(BoardSize.FourByFour), 0, 1, 1),
+            () => new LevelDefinition("id", SudokuBoard.Empty(BoardSize.FourByFour), 0, 1, 1, 1),
+            Throws.Nothing);
+    }
+
+    [Test]
+    public void TemporalWindowCannotBeNegative()
+    {
+        Assert.That(
+            () => new LevelDefinition("id", SudokuBoard.Empty(BoardSize.FourByFour), 1, -1, 1, 1),
+            Throws.InstanceOf<ArgumentOutOfRangeException>());
+    }
+
+    [Test]
+    public void ZeroTemporalWindowIsAllowedAndMeansNoReachIntoHistory()
+    {
+        Assert.That(
+            () => new LevelDefinition("id", SudokuBoard.Empty(BoardSize.FourByFour), 1, 0, 1, 1),
             Throws.Nothing);
     }
 
@@ -56,7 +74,7 @@ public sealed class LevelDefinitionTests
     public void AtLeastOneActiveSlotIsNeededForTheRootTimeline()
     {
         Assert.That(
-            () => new LevelDefinition("id", SudokuBoard.Empty(BoardSize.FourByFour), 1, 0, 1),
+            () => new LevelDefinition("id", SudokuBoard.Empty(BoardSize.FourByFour), 1, 1, 0, 1),
             Throws.InstanceOf<ArgumentOutOfRangeException>());
     }
 
@@ -64,7 +82,7 @@ public sealed class LevelDefinitionTests
     public void FinalDepthCannotBeNegative()
     {
         Assert.That(
-            () => new LevelDefinition("id", SudokuBoard.Empty(BoardSize.FourByFour), 1, 1, -1),
+            () => new LevelDefinition("id", SudokuBoard.Empty(BoardSize.FourByFour), 1, 1, 1, -1),
             Throws.InstanceOf<ArgumentOutOfRangeException>());
     }
 

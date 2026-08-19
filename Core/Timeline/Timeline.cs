@@ -109,6 +109,50 @@ public sealed class Timeline
             occupiesActiveSlot);
     }
 
+    /// <summary>
+    /// Creates a timeline that branches off <paramref name="parent"/> at
+    /// <paramref name="sourceTime"/>.
+    ///
+    /// The new timeline holds two states: the parent's state at the source time,
+    /// carried over unchanged, and then that same board with one alternative
+    /// placement on it. Its own time axis therefore starts at the source time and
+    /// its frontier sits one step later, exactly as if that alternative had been
+    /// played back then.
+    ///
+    /// The parent is only read here. It is an immutable object and its states are
+    /// immutable too, so the carried-over state is a copy in every sense that
+    /// matters: nothing either timeline can do will ever change what the other sees.
+    /// </summary>
+    internal static Timeline CreateBranch(
+        int id,
+        Timeline parent,
+        int sourceTime,
+        SudokuBoard branchedBoard,
+        TimelineStatus status,
+        bool occupiesActiveSlot)
+    {
+        if (parent is null)
+        {
+            throw new ArgumentNullException(nameof(parent));
+        }
+
+        if (branchedBoard is null)
+        {
+            throw new ArgumentNullException(nameof(branchedBoard));
+        }
+
+        SudokuBoard carriedOver = parent.StateAt(sourceTime);
+
+        return new Timeline(
+            id,
+            parentId: parent.Id,
+            branchTime: sourceTime,
+            firstStateTime: sourceTime,
+            states: new[] { carriedOver, branchedBoard },
+            status,
+            occupiesActiveSlot);
+    }
+
     /// <summary>True when this timeline holds a state at <paramref name="time"/>.</summary>
     public bool ContainsTime(int time) => time >= FirstStateTime && time <= FrontierTime;
 

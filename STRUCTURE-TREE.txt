@@ -418,11 +418,21 @@ everything-game-dev-code
 ├── Core
 │   ├── Compatibility
 │   │   └── IsExternalInit.cs
+│   ├── Game
+│   │   ├── GameOutcome.cs
+│   │   ├── GameState.cs
+│   │   ├── MoveRejection.cs
+│   │   └── MoveResult.cs
+│   ├── Level
+│   │   └── LevelDefinition.cs
 │   ├── Solver
 │   │   └── SudokuSolver.cs
 │   ├── Sudoku
 │   │   ├── BoardSize.cs
 │   │   └── SudokuBoard.cs
+│   ├── Timeline
+│   │   ├── Timeline.cs
+│   │   └── TimelineStatus.cs
 │   ├── Validation
 │   │   └── .gitkeep
 │   └── Core.csproj
@@ -1476,12 +1486,24 @@ everything-game-dev-code
 │   └── README.md
 ├── Tests
 │   ├── Fixtures
+│   │   ├── Levels.cs
 │   │   └── Puzzles.cs
+│   ├── Game
+│   │   ├── GameStateTests.cs
+│   │   ├── PresentTests.cs
+│   │   └── VictoryTests.cs
+│   ├── Level
+│   │   └── LevelDefinitionTests.cs
+│   ├── Scenarios
+│   │   └── ScenarioATests.cs
 │   ├── Solver
 │   │   └── SudokuSolverTests.cs
 │   ├── Sudoku
 │   │   ├── BoardSizeTests.cs
 │   │   └── SudokuBoardTests.cs
+│   ├── Timeline
+│   │   └── TimelineTests.cs
+│   ├── ApiSurfaceTests.cs
 │   ├── SkeletonTests.cs
 │   └── Tests.csproj
 ├── tests

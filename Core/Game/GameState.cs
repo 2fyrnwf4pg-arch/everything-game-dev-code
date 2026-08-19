@@ -206,6 +206,130 @@ public sealed class GameState
         return MoveResult.Applied(new GameState(Level, updated, SelectedTimelineId, RemainingTemporalBudget));
     }
 
+    /// <summary>
+    /// Checks a Temporal Move without performing it, and reports which of the
+    /// branch conditions fails first.
+    /// </summary>
+    public TemporalMoveRejection ValidateTemporalMove(
+        int sourceTimelineId,
+        int sourceTime,
+        int row,
+        int column,
+        int value)
+    {
+        if (Outcome != GameOutcome.InProgress)
+        {
+            return TemporalMoveRejection.GameAlreadyFinished;
+        }
+
+        // 1. temporal budget must be left
+        if (RemainingTemporalBudget <= 0)
+        {
+            return TemporalMoveRejection.NoTemporalBudget;
+        }
+
+        // 2. the source timeline must exist
+        Timeline? source = FindTimeline(sourceTimelineId);
+
+        if (source is null)
+        {
+            return TemporalMoveRejection.SourceTimelineNotFound;
+        }
+
+        // 3. it must hold a state at the requested time
+        if (!source.ContainsTime(sourceTime))
+        {
+            return TemporalMoveRejection.SourceTimeNotInTimeline;
+        }
+
+        // 4. that state must lie strictly behind the source's own frontier
+        if (sourceTime >= source.FrontierTime)
+        {
+            return TemporalMoveRejection.SourceTimeIsNotHistorical;
+        }
+
+        // 5. and strictly before the global present
+        if (Present is null || sourceTime >= Present.Value)
+        {
+            return TemporalMoveRejection.SourceTimeNotBeforePresent;
+        }
+
+        // 6. and within the level's temporal window
+        int reach = Present.Value - sourceTime;
+
+        if (reach < 0 || reach > Level.TemporalWindow)
+        {
+            return TemporalMoveRejection.OutsideTemporalWindow;
+        }
+
+        // 7. the alternative placement must be legal Sudoku on the source board
+        SudokuBoard sourceBoard = source.StateAt(sourceTime);
+
+        if (!sourceBoard.IsPlacementLegal(row, column, value))
+        {
+            return TemporalMoveRejection.PlacementNotLegal;
+        }
+
+        // 8. and it must actually change that board. A legal placement always
+        // lands on an empty cell, so condition 7 already implies this; the check
+        // stays because the rule is stated separately and a future change to what
+        // counts as a legal placement must not quietly weaken it.
+        if (sourceBoard.WithValue(row, column, value).Equals(sourceBoard))
+        {
+            return TemporalMoveRejection.BranchDoesNotChangeTheBoard;
+        }
+
+        return TemporalMoveRejection.None;
+    }
+
+    /// <summary>
+    /// Performs a Temporal Move: branches a new timeline off a historical state of
+    /// an existing timeline, carrying that state over and playing one alternative
+    /// legal placement on it.
+    ///
+    /// The source timeline is never modified — a branch is not an edit to anyone's
+    /// history. The new timeline is classified immediately, so a branch that is
+    /// legal but impossible to complete is reported dead rather than left looking
+    /// playable. Costs exactly one unit of temporal budget.
+    /// </summary>
+    public TemporalMoveResult PerformTemporalMove(
+        int sourceTimelineId,
+        int sourceTime,
+        int row,
+        int column,
+        int value)
+    {
+        TemporalMoveRejection rejection = ValidateTemporalMove(sourceTimelineId, sourceTime, row, column, value);
+
+        if (rejection != TemporalMoveRejection.None)
+        {
+            return TemporalMoveResult.Refused(rejection, this);
+        }
+
+        Timeline source = GetTimeline(sourceTimelineId);
+        SudokuBoard branchedBoard = source.StateAt(sourceTime).WithValue(row, column, value);
+        TimelineStatus status = TimelineClassifier.ClassifyBoard(branchedBoard);
+
+        // Slot enforcement is not part of this phase: a new branch always receives
+        // an active slot. Nothing here structurally prevents handing out an
+        // INACTIVE timeline instead once slots are actually contended.
+        Timeline branch = Timeline.CreateBranch(
+            NextTimelineId(),
+            source,
+            sourceTime,
+            branchedBoard,
+            status,
+            occupiesActiveSlot: true);
+
+        Timeline[] extended = new Timeline[_timelines.Length + 1];
+        Array.Copy(_timelines, extended, _timelines.Length);
+        extended[_timelines.Length] = branch;
+
+        GameState next = new GameState(Level, extended, SelectedTimelineId, RemainingTemporalBudget - 1);
+
+        return TemporalMoveResult.Created(next, branch.Id);
+    }
+
     public override string ToString()
     {
         string present = Present is null ? "none" : $"T{Present.Value}";
@@ -262,6 +386,25 @@ public sealed class GameState
         }
 
         return anyPlayable ? GameOutcome.InProgress : GameOutcome.GameOver;
+    }
+
+    /// <summary>
+    /// Next free timeline id. Ids are handed out in ascending order and never
+    /// reused, so the same action sequence always produces the same ids.
+    /// </summary>
+    private int NextTimelineId()
+    {
+        int highest = _timelines[0].Id;
+
+        for (int index = 1; index < _timelines.Length; index++)
+        {
+            if (_timelines[index].Id > highest)
+            {
+                highest = _timelines[index].Id;
+            }
+        }
+
+        return highest + 1;
     }
 
     private Timeline? FindTimeline(int timelineId)

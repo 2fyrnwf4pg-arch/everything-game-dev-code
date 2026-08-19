@@ -15,15 +15,46 @@ namespace FiveDSudoku.Tests;
 internal static class Levels
 {
     internal const int DefaultTemporalBudget = 3;
+
+    /// <summary>Wide enough that the window never gets in the way unless a test asks it to.</summary>
+    internal const int DefaultTemporalWindow = 16;
+
     internal const int DefaultActiveSlots = 2;
     internal const int DefaultFinalDepth = 12;
 
     /// <summary>A solvable 4x4 level with exactly one solution.</summary>
     internal static LevelDefinition SolvableFourByFour(
         int temporalBudget = DefaultTemporalBudget,
+        int temporalWindow = DefaultTemporalWindow,
         int maxActiveTimelines = DefaultActiveSlots,
         int finalDepth = DefaultFinalDepth) =>
-        FromText("4x4-unique", BoardSize.FourByFour, Puzzles.Unique4, temporalBudget, maxActiveTimelines, finalDepth);
+        FromText(
+            "4x4-unique",
+            BoardSize.FourByFour,
+            Puzzles.Unique4,
+            temporalBudget,
+            temporalWindow,
+            maxActiveTimelines,
+            finalDepth);
+
+    /// <summary>
+    /// A 4x4 level with exactly two solutions. Useful whenever a branch has to end
+    /// up playable: on a uniquely solvable puzzle every alternative to the solution
+    /// is by definition a dead end.
+    /// </summary>
+    internal static LevelDefinition TwoSolutionFourByFour(
+        int temporalBudget = DefaultTemporalBudget,
+        int temporalWindow = DefaultTemporalWindow,
+        int maxActiveTimelines = DefaultActiveSlots,
+        int finalDepth = DefaultFinalDepth) =>
+        FromText(
+            "4x4-two-solutions",
+            BoardSize.FourByFour,
+            Puzzles.Multi4,
+            temporalBudget,
+            temporalWindow,
+            maxActiveTimelines,
+            finalDepth);
 
     /// <summary>Builds a level from a board written as text.</summary>
     internal static LevelDefinition FromText(
@@ -31,12 +62,14 @@ internal static class Levels
         BoardSize size,
         string boardText,
         int temporalBudget = DefaultTemporalBudget,
+        int temporalWindow = DefaultTemporalWindow,
         int maxActiveTimelines = DefaultActiveSlots,
         int finalDepth = DefaultFinalDepth) =>
         new LevelDefinition(
             id,
             SudokuBoard.Parse(size, boardText),
             temporalBudget,
+            temporalWindow,
             maxActiveTimelines,
             finalDepth);
 
