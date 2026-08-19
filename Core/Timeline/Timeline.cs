@@ -42,7 +42,16 @@ public sealed class Timeline
         BranchTime = branchTime;
         FirstStateTime = firstStateTime;
         Status = status;
-        OccupiesActiveSlot = occupiesActiveSlot;
+
+        // A timeline that is finished or not in play holds no slot. Enforcing it
+        // here rather than at each call site means the accounting cannot drift:
+        // a dead timeline can never keep a slot occupied that another timeline is
+        // waiting for, and an inactive one can never quietly hold one it does not
+        // have.
+        OccupiesActiveSlot = occupiesActiveSlot
+            && status != TimelineStatus.Dead
+            && status != TimelineStatus.Inactive;
+
         _states = states;
         _statesView = new ReadOnlyCollection<SudokuBoard>(states);
     }
@@ -192,26 +201,18 @@ public sealed class Timeline
         return new Timeline(Id, ParentId, BranchTime, FirstStateTime, extended, status, OccupiesActiveSlot);
     }
 
-    /// <summary>Returns a new timeline with a different status and the same history.</summary>
-    internal Timeline WithStatus(TimelineStatus status)
+    /// <summary>
+    /// Returns a new timeline with a different status and slot, and the same
+    /// history. Used when an inactive timeline is brought into play.
+    /// </summary>
+    internal Timeline WithStatusAndSlot(TimelineStatus status, bool occupiesActiveSlot)
     {
-        if (status == Status)
+        if (status == Status && occupiesActiveSlot == OccupiesActiveSlot)
         {
             return this;
         }
 
-        return new Timeline(Id, ParentId, BranchTime, FirstStateTime, _states, status, OccupiesActiveSlot);
-    }
-
-    /// <summary>Returns a new timeline holding or releasing an active slot.</summary>
-    internal Timeline WithActiveSlot(bool occupiesActiveSlot)
-    {
-        if (occupiesActiveSlot == OccupiesActiveSlot)
-        {
-            return this;
-        }
-
-        return new Timeline(Id, ParentId, BranchTime, FirstStateTime, _states, Status, occupiesActiveSlot);
+        return new Timeline(Id, ParentId, BranchTime, FirstStateTime, _states, status, occupiesActiveSlot);
     }
 
     public override string ToString() =>

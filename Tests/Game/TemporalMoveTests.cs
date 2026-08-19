@@ -285,7 +285,11 @@ public sealed class TemporalMoveTests
         Assert.That(branch.StateCount, Is.EqualTo(2));
         Assert.That(branch.StateAt(1), Is.EqualTo(sourceState), "the source state is carried over unchanged");
         Assert.That(branch.Frontier, Is.EqualTo(sourceState.WithValue(1, 3, 2)));
-        Assert.That(branch.OccupiesActiveSlot, Is.True);
+
+        // A slot was free when this branch was made, but the branch turned out to
+        // be impossible and a dead timeline holds no slot.
+        Assert.That(branch.Status, Is.EqualTo(TimelineStatus.Dead));
+        Assert.That(branch.OccupiesActiveSlot, Is.False);
     }
 
     [Test]
@@ -470,7 +474,7 @@ public sealed class TemporalMoveTests
 
         while (game.Outcome == GameOutcome.InProgress)
         {
-            game = PlayAnyLegalMove(game);
+            game = Levels.PlayAnyLegalMove(game);
         }
 
         Assert.That(game.Outcome, Is.EqualTo(GameOutcome.GameOver));
@@ -543,29 +547,4 @@ public sealed class TemporalMoveTests
             Is.EqualTo(TemporalMoveRejection.RunAlreadyWon));
     }
 
-    /// <summary>Plays the first legal placement in row-major, ascending-value order.</summary>
-    private static GameState PlayAnyLegalMove(GameState game)
-    {
-        BoardSize size = game.Level.Size;
-
-        for (int row = 0; row < size.Side; row++)
-        {
-            for (int column = 0; column < size.Side; column++)
-            {
-                for (int value = size.MinValue; value <= size.MaxValue; value++)
-                {
-                    MoveResult result = game.PlaceValue(row, column, value);
-
-                    if (result.Succeeded)
-                    {
-                        return result.State;
-                    }
-                }
-            }
-        }
-
-        Assert.Fail("no legal placement was available");
-
-        return game;
-    }
 }

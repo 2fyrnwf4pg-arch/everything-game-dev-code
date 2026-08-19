@@ -74,6 +74,33 @@ internal static class Levels
             finalDepth);
 
     /// <summary>
+    /// Plays the first legal placement in row-major, ascending-value order on the
+    /// selected timeline. Deterministic, so a run driven by it is reproducible.
+    /// </summary>
+    internal static GameState PlayAnyLegalMove(GameState game)
+    {
+        BoardSize size = game.Level.Size;
+
+        for (int row = 0; row < size.Side; row++)
+        {
+            for (int column = 0; column < size.Side; column++)
+            {
+                for (int value = size.MinValue; value <= size.MaxValue; value++)
+                {
+                    MoveResult result = game.PlaceValue(row, column, value);
+
+                    if (result.Succeeded)
+                    {
+                        return result.State;
+                    }
+                }
+            }
+        }
+
+        throw new InvalidOperationException("No legal placement was available on the selected timeline.");
+    }
+
+    /// <summary>
     /// Plays the selected timeline to a complete solution using normal placements
     /// only, in row-major order. Throws if any placement is refused, so a caller
     /// never mistakes a stalled run for a solved one.

@@ -72,6 +72,29 @@ public sealed class GameState
     /// <summary>True when the run cannot be continued and was not won.</summary>
     public bool IsGameOver => Outcome == GameOutcome.GameOver;
 
+    /// <summary>
+    /// Active slots the level grants that no timeline currently holds. A timeline
+    /// releases its slot the moment it dies, which is how a slot ever comes free
+    /// for an inactive timeline to take.
+    /// </summary>
+    public int FreeActiveSlots
+    {
+        get
+        {
+            int taken = 0;
+
+            for (int index = 0; index < _timelines.Length; index++)
+            {
+                if (_timelines[index].OccupiesActiveSlot)
+                {
+                    taken++;
+                }
+            }
+
+            return Level.MaxActiveTimelines - taken;
+        }
+    }
+
     /// <summary>Starts a run: one root timeline holding the level's starting board.</summary>
     public static GameState Start(LevelDefinition level)
     {
@@ -319,18 +342,24 @@ public sealed class GameState
 
         Timeline source = GetTimeline(sourceTimelineId);
         SudokuBoard branchedBoard = source.StateAt(sourceTime).WithValue(row, column, value);
-        TimelineStatus status = TimelineClassifier.ClassifyBoard(branchedBoard);
 
-        // Slot enforcement is not part of this phase: a new branch always receives
-        // an active slot. Nothing here structurally prevents handing out an
-        // INACTIVE timeline instead once slots are actually contended.
+        // With a slot to spare the branch enters play and is classified at once, so
+        // an impossible one is never left looking playable. With no slot to spare it
+        // is created inactive: it exists and can be inspected, but it takes no part
+        // in the run until a slot frees up and it is activated, and only then is it
+        // worth asking the solver what it is.
+        bool slotAvailable = FreeActiveSlots > 0;
+        TimelineStatus status = slotAvailable
+            ? TimelineClassifier.ClassifyBoard(branchedBoard)
+            : TimelineStatus.Inactive;
+
         Timeline branch = Timeline.CreateBranch(
             NextTimelineId(),
             source,
             sourceTime,
             branchedBoard,
             status,
-            occupiesActiveSlot: true);
+            occupiesActiveSlot: slotAvailable);
 
         Timeline[] extended = new Timeline[_timelines.Length + 1];
         Array.Copy(_timelines, extended, _timelines.Length);
@@ -339,6 +368,62 @@ public sealed class GameState
         GameState next = new GameState(Level, extended, SelectedTimelineId, RemainingTemporalBudget - 1);
 
         return TemporalMoveResult.Created(next, branch.Id);
+    }
+
+    /// <summary>
+    /// Checks whether an inactive timeline can be brought into play without doing
+    /// it, and reports what stands in the way.
+    /// </summary>
+    public TimelineActivationRejection ValidateActivation(int timelineId)
+    {
+        if (Outcome == GameOutcome.Won)
+        {
+            return TimelineActivationRejection.RunAlreadyWon;
+        }
+
+        Timeline? timeline = FindTimeline(timelineId);
+
+        if (timeline is null)
+        {
+            return TimelineActivationRejection.TimelineNotFound;
+        }
+
+        if (timeline.Status != TimelineStatus.Inactive)
+        {
+            return TimelineActivationRejection.TimelineNotInactive;
+        }
+
+        if (FreeActiveSlots <= 0)
+        {
+            return TimelineActivationRejection.NoFreeActiveSlot;
+        }
+
+        return TimelineActivationRejection.None;
+    }
+
+    /// <summary>
+    /// Brings an inactive timeline into play. It takes a free active slot and is
+    /// classified on the spot, so a timeline that turns out to be impossible enters
+    /// as dead rather than as something to keep spending moves on.
+    ///
+    /// Costs no temporal budget: this is a management action, not a move.
+    /// </summary>
+    public TimelineActivationResult ActivateTimeline(int timelineId)
+    {
+        TimelineActivationRejection rejection = ValidateActivation(timelineId);
+
+        if (rejection != TimelineActivationRejection.None)
+        {
+            return TimelineActivationResult.Refused(rejection, this);
+        }
+
+        Timeline timeline = GetTimeline(timelineId);
+        TimelineStatus status = TimelineClassifier.ClassifyBoard(timeline.Frontier);
+
+        Timeline[] updated = ReplaceTimeline(timeline.WithStatusAndSlot(status, occupiesActiveSlot: true));
+
+        return TimelineActivationResult.Activated(
+            new GameState(Level, updated, SelectedTimelineId, RemainingTemporalBudget));
     }
 
     public override string ToString()
@@ -376,9 +461,16 @@ public sealed class GameState
     }
 
     /// <summary>
-    /// Won as soon as any timeline holds a complete, valid solution. Otherwise over
-    /// once nothing is left that could still be played. Never inferred from the
-    /// present.
+    /// Won as soon as any timeline holding an active slot has reached a complete,
+    /// valid solution — the root or any branch, it makes no difference. A solved
+    /// timeline that holds no slot has not entered play and so cannot end the
+    /// level until it is activated.
+    ///
+    /// Otherwise the run is over once nothing is left that could still be played.
+    /// A dead or inactive timeline never counts as playable, and one branch dying
+    /// never ends a run while another active timeline can still be advanced.
+    ///
+    /// Never inferred from the present.
     /// </summary>
     private static GameOutcome ComputeOutcome(Timeline[] timelines)
     {
@@ -388,7 +480,7 @@ public sealed class GameState
         {
             Timeline timeline = timelines[index];
 
-            if (timeline.Status == TimelineStatus.Solved)
+            if (timeline.Status == TimelineStatus.Solved && timeline.OccupiesActiveSlot)
             {
                 return GameOutcome.Won;
             }

@@ -84,6 +84,47 @@ public sealed class PresentTests
     }
 
     [Test]
+    public void PresentAdvancesOnlyWhenTheEarliestActiveFrontierAdvances()
+    {
+        GameState game = GameState.Start(Levels.TwoSolutionFourByFour());
+        game = game.PlaceValue(0, 0, 1).State;
+        game = game.PlaceValue(0, 1, 2).State;
+
+        GameState afterBranch = game.PerformTemporalMove(GameState.RootTimelineId, 0, 0, 0, 2).State;
+        int branchId = 1;
+
+        Assert.That(afterBranch.Present, Is.EqualTo(1), "the branch is now the earliest active frontier");
+        Assert.That(afterBranch.GetTimeline(GameState.RootTimelineId).FrontierTime, Is.EqualTo(2));
+
+        // Advancing the earliest frontier is what moves the present, and only up
+        // to the next-earliest one.
+        GameState advanced = afterBranch.SelectTimeline(branchId).PlaceValue(0, 1, 1).State;
+
+        Assert.That(advanced.GetTimeline(branchId).FrontierTime, Is.EqualTo(2));
+        Assert.That(advanced.Present, Is.EqualTo(2));
+    }
+
+    [Test]
+    public void InactiveTimelinesDoNotInfluenceThePresent()
+    {
+        // One slot, held by the root, so the branch is parked at an early frontier.
+        GameState game = GameState.Start(
+            Levels.SolvableFourByFour(temporalBudget: 2, maxActiveTimelines: 1));
+
+        game = game.PlaceValue(0, 1, 4).State;
+        game = game.PlaceValue(0, 2, 3).State;
+
+        Assert.That(game.Present, Is.EqualTo(2));
+
+        TemporalMoveResult parked = game.PerformTemporalMove(GameState.RootTimelineId, 0, 0, 1, 3);
+        Timeline branch = parked.State.GetTimeline(parked.NewTimelineId!.Value);
+
+        Assert.That(branch.Status, Is.EqualTo(TimelineStatus.Inactive));
+        Assert.That(branch.FrontierTime, Is.EqualTo(1), "which is earlier than the present");
+        Assert.That(parked.State.Present, Is.EqualTo(2), "and yet the present has not moved");
+    }
+
+    [Test]
     public void PresentIsAbsentWhenNoTimelineIsActiveAnyMore()
     {
         // Solving the root leaves no active timeline, so there is no present. The
