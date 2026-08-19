@@ -1,98 +1,109 @@
-# CLAUDE.md
+# CLAUDE.md — 5D Sudoku Core Prototype
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## Project
 
-## What this repository is
+**5D Sudoku** is an original game inspired by the *concepts* of 5D Chess With
+Multiverse Time Travel — immutable historical states, timelines, branching,
+a present/frontier, and switching between timelines — applied to Sudoku
+instead of chess.
 
-This is **not a game**. It is a layered workflow *scaffold* for AI-assisted game development:
-a coordinated system of rules, agents, commands, skills, and contexts that a coding assistant
-loads to do design, technical design, implementation, QA, release, and live-ops work — while
-keeping the Unity, Unreal, Godot, and web (HTML5) execution layers strictly isolated.
+Do not copy code, assets, UI text, names, or proprietary implementation
+details from 5D Chess. Only the high-level concepts are shared inspiration;
+everything else here is original design.
 
-The repository's own "code" is a Node.js (>=18, zero runtime deps) tooling layer under `scripts/`
-that **validates and generates** the scaffold's content so it can never drift out of sync.
+## Current milestone
 
-## Commands
+We are building the **core game-logic prototype**: an engine-independent C#
+core library, with automated tests, that will later be embedded in Unity for
+Steam/Windows, iOS, and Android.
 
-```bash
-npm test            # node tests/run-all.js — scaffold self-tests
-npm run validate    # full validation gate (12 validators + markdown lint); this is what CI runs
-npm run doctor      # diagnose install: env, hooks, active engine profile, artifact drift
-npm run setup:hooks # install the git pre-commit hook (first-time setup)
-```
+No graphics, no Unity, no platform code yet. This phase is done when the
+deterministic rules engine is correct and fully tested.
 
-Individual validators (run when iterating on one concern — faster than the full gate):
-`validate:manifests`, `validate:engines`, `validate:hooks`, `validate:schemas`,
-`validate:structure`, `validate:references`, `validate:generated-assets`,
-`validate:structure-artifacts`, `validate:wrappers`, `validate:graph`, `lint:markdown`.
+The detailed, phase-by-phase implementation plan lives in `PHASES.md`.
+Always check which phase is currently open before writing code, and don't
+start a phase that hasn't been explicitly approved.
 
-Run a single test file directly: `node tests/<path>.test.js` (e.g. `node tests/lib/engine-isolation.test.js`).
+## Coordinates
 
-CI (`.github/workflows/ci.yml`) runs exactly `npm test` then `npm run validate` on Node 18.
-The validator list lives **only** in package.json's `validate` script so CI and local runs can't diverge.
+Every board state conceptually sits at `(X, Y, T, L)`:
 
-## Source of truth vs. generated artifacts
+- `X`, `Y` — Sudoku column/row (the actual puzzle grid)
+- `T` — time/state index within a timeline
+- `L` — timeline identifier
 
-This is the most important thing to understand before editing. Several files are **generated** —
-editing them by hand is the failure mode CI guards against (a `*:check` validator re-derives them
-and fails if they'd change).
+`T` and `L` locate a board in the multiverse; they are **not** extra Sudoku
+dimensions. Row/column/box constraints are always local to a single
+`(X, Y)` board.
 
-| Edit this (source of truth) | Generates this (do NOT hand-edit) | Sync / check |
-|---|---|---|
-| `commands/*.md` | `.claude/commands/*`, `.codex/commands/*`, `.opencode/*` | `npm run sync:wrappers` / `validate:wrappers` |
-| tracked file tree | `STRUCTURE-TREE.txt`, `docs/structure-overview.md` | `npm run sync:structure` / `validate:structure-artifacts` |
-| `hooks/hooks.json` | harness hook wiring | `npm run sync:hook-wiring` |
-| scaffold layers | `docs/dependency-graph.*` | `npm run sync:graph` / `validate:graph` |
+## Non-negotiable constraints
 
-Workflow when you change a source file: edit the source → run the matching `sync:*` → commit both.
-The pre-commit hook (`.githooks/pre-commit`) auto-runs `sync:structure` + structure/markdown
-validation and stages the regenerated artifacts, so structure drift is caught before it lands.
+- **No UnityEngine dependency** anywhere in `Core/`. Plain C# types,
+  records, structs, collections only.
+- **Determinism**: the same level definition + seed + starting state +
+  action sequence must always produce the same result.
+- **Immutability**: every played Sudoku state is a value object that is
+  never mutated in place. A move produces a *new* state; history is
+  preserved and inspectable.
+- **No normal gameplay Undo.** The only way to revisit a past decision is a
+  Temporal Move, which costs temporal budget and leaves the original
+  timeline untouched.
+- **Time travel is always optional**, never required to finish a level.
+  Every release-candidate level must have at least one complete solve path
+  using zero Temporal Moves.
+- Preserve the rules in `PHASES.md` exactly as written — they were already
+  stress-tested against a Python prototype. If a test proves an internal
+  contradiction, stop, document it, add a regression test, and only then
+  make the smallest necessary rule change. Never silently work around a
+  contradiction.
 
-Structure artifacts are derived from `git ls-files`, not a filesystem walk — untracked/gitignored
-content never leaks in, and local output matches what CI regenerates from a clean checkout.
+## Explicitly NOT part of this phase
+
+Do not implement, even if it seems convenient: multiplayer, online
+services, achievements, monetization, ads, sound, animations, final art,
+Steam integration, iOS/Android platform code, cross-timeline magic
+constraints, causal echoes, timeline merging, artificial paradox rules.
+Do not invent speculative mechanics (temporal cells, timeline gates,
+cross-timeline Sudoku constraints) that aren't in the spec.
 
 ## Architecture
 
-**Layered scaffold (engine-neutral core, top of repo):**
-- `rules/` — policy and "what good looks like". Resolution order is `rules/common/` first, then
-  exactly **one** engine layer (`rules/unity/` | `rules/unreal/` | `rules/godot/` | `rules/web/`).
-- `agents/` — flat list of specialized roles (who owns the work).
-- `commands/` — flat list of workflow entry points. A slash command like `/gdd` resolves to
-  `commands/gdd.md`; read that file and follow its declared agents/skills/output before acting.
-- `skills/` — reusable execution patterns, **grouped by category**, each leaf a folder with a `SKILL.md`.
-- `contexts/` — phase-specific priority shifts (e.g. prototype vs. release).
-- `hooks/` — workflow safety automation (`hooks/hooks.json` is the source).
-- `manifests/` — install profiles/components and two key registries: `engines.json` (the single
-  source of truth for which engine layers exist; array order is path-detection priority) and
-  `asset-providers.json` (capability→model routing for AI asset generation).
-- `schemas/` — JSON Schema (ajv) validation for every manifest, hook config, and plugin.
-- `docs/templates/` — structured deliverable templates (GDD, TDD, QA plan, etc.).
+```
+Core/
+  Sudoku/
+  Timeline/
+  Game/
+  Level/
+  Solver/
+  Validation/
 
-**Tooling layer (`scripts/`):** generators (`generate-*`, `new-engine`, `sync-*`), validators
-(`validate-*`), and `doctor.js`. Shared logic lives in `scripts/lib/` — notably `engines.js`
-(all engine lists derive from `manifests/engines.json`), `structure-artifacts.js`, and
-`profile-resolution.js`. Per-event hook implementations are in `scripts/hooks/`.
+Tests/
 
-**Harness adapters** (`.claude/`, `.codex/`, `.cursor/`, `.opencode/`, `.kiro/`): each points back
-to the shared scaffold rather than being a second source of truth. Their command wrappers are generated.
+Tools/
+  ScenarioRunner/
+```
 
-## Engine isolation (hard rule)
+The UI layer (future Unity project) must not contain game rules — it only
+calls into `Core`.
 
-Never combine two engine layers in one implementation pass, and never put engine-specific runtime
-details into a `common/` document. Shared docs describe **intent, ownership, and quality bars**;
-engine docs describe **implementation conventions inside that one engine only**. This is enforced
-by `tests/lib/engine-isolation.test.js` and `engine-content-isolation.test.js` — adding cross-engine
-references will fail the suite.
+## Workflow
 
-Adding a new engine layer is done via `npm run new:engine` (driven by `manifests/engines.json`),
-not by hand-creating directories.
+1. Work through `PHASES.md` **in order**, one phase at a time.
+2. At the end of each phase: run the full test suite, print a short
+   pass/fail summary, and **stop**. Wait for explicit approval before
+   starting the next phase.
+3. Don't reach ahead into a later phase's rules "for convenience" — if
+   Phase 2 code seems to want something from Phase 4, flag it instead of
+   implementing it early.
+4. Before declaring a phase done, re-read its "Definition of done" in
+   `PHASES.md`. Compiling is not done. Passing tests is not done unless the
+   specific tests listed for that phase pass.
 
-## Conventions to preserve
+## Testing philosophy
 
-- Keep `agents/` and `commands/` **flat**; keep `skills/` **grouped** with a `SKILL.md` per leaf.
-- Prefer a command if one exists; prefer a reusable skill over one-off instructions; prefer the
-  common layer for standards and the engine layer for implementation detail.
-- Don't create duplicate sources of truth or invent new top-level structure without justification.
-- When a decision changes design/tech/test/telemetry/release expectations, update the relevant
-  source-of-truth doc (or recommend it) — keep documents alive.
-- Plan before non-trivial (multi-step / multi-role / architectural) work.
+- Every phase ships with its own tests; don't defer testing to "later".
+- Keep regression tests for every bug found during development — never
+  delete them once added.
+- Randomized/stress tests use a fixed default seed with a configurable
+  override, bounded random walks (not uncontrolled brute force), and should
+  stay fast enough to run routinely.

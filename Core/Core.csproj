@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- netstandard2.1 keeps Core embeddable in Unity later without a rewrite.
+         Core must never reference UnityEngine or any Unity package. -->
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>FiveDSudoku.Core</RootNamespace>
+    <AssemblyName>FiveDSudoku.Core</AssemblyName>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+</Project>

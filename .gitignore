@@ -17,3 +17,9 @@ CLAUDE.local.md
 # Local environment files (never commit API keys)
 .env
 .env.local
+
+# .NET build output (5D Sudoku core prototype)
+bin/
+obj/
+*.user
+TestResults/

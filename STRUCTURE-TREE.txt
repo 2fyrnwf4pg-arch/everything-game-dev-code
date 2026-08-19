@@ -415,6 +415,22 @@ everything-game-dev-code
 │   ├── release.md
 │   ├── research.md
 │   └── review.md
+├── Core
+│   ├── Compatibility
+│   │   └── IsExternalInit.cs
+│   ├── Game
+│   │   └── .gitkeep
+│   ├── Level
+│   │   └── .gitkeep
+│   ├── Solver
+│   │   └── .gitkeep
+│   ├── Sudoku
+│   │   └── .gitkeep
+│   ├── Timeline
+│   │   └── .gitkeep
+│   ├── Validation
+│   │   └── .gitkeep
+│   └── Core.csproj
 ├── docs
 │   ├── orchestration
 │   │   ├── agent-skill-matrix.md
@@ -1463,6 +1479,9 @@ everything-game-dev-code
 │   │   │   └── SKILL.md
 │   │   └── README.md
 │   └── README.md
+├── Tests
+│   ├── SkeletonTests.cs
+│   └── Tests.csproj
 ├── tests
 │   ├── ci
 │   │   └── readme.test.js
@@ -1482,6 +1501,10 @@ everything-game-dev-code
 │   │   └── setup-profile.test.js
 │   ├── README.md
 │   └── run-all.js
+├── Tools
+│   └── ScenarioRunner
+│       ├── Program.cs
+│       └── ScenarioRunner.csproj
 ├── .env.example
 ├── .gitignore
 ├── .markdownlint.json
@@ -1491,11 +1514,13 @@ everything-game-dev-code
 ├── CHANGELOG.md
 ├── CLAUDE.md
 ├── CONTRIBUTING.md
+├── FiveDSudoku.sln
 ├── install.ps1
 ├── install.sh
 ├── LICENSE
 ├── package-lock.json
 ├── package.json
+├── PHASES.md
 ├── README.md
 ├── SECURITY.md
 ├── STRUCTURE-TREE.txt
