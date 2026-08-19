@@ -1593,6 +1593,8 @@ everything-game-dev-code
 │   │   │           └── FiveDSudoku.Core.pdb
 │   │   ├── Packages
 │   │   │   └── manifest.json
+│   │   ├── ProjectSettings
+│   │   │   └── ProjectVersion.txt
 │   │   └── .gitignore
 │   ├── Verification
 │   │   ├── CompileCheck
@@ -1600,7 +1602,8 @@ everything-game-dev-code
 │   │   └── RunCheck
 │   │       └── UnityRunCheck.csproj
 │   ├── build-core-dll.sh
-│   └── README.md
+│   ├── README.md
+│   └── set-unity-version.sh
 ├── .env.example
 ├── .gitignore
 ├── .markdownlint.json
