@@ -38,4 +38,37 @@ public static class TimelineClassifier
 
         return SudokuSolver.HasSolution(board) ? TimelineStatus.Active : TimelineStatus.Dead;
     }
+
+    /// <summary>
+    /// Classifies a board that ordinary play has just produced. Solved when it is a
+    /// complete, violation-free solution; <see cref="TimelineStatus.Dead"/> when it
+    /// offers no legal placement at all; otherwise <see cref="TimelineStatus.Active"/>.
+    ///
+    /// This asks a local question where <see cref="ClassifyBoard"/> asks a global
+    /// one, and the difference is deliberate. A board can still offer placements
+    /// while already having no completion; that timeline stays playable, and the
+    /// player finds out the way a player should. Running the solver after every
+    /// placement would instead end a timeline the instant a legal-looking value
+    /// turned out to be wrong.
+    ///
+    /// What it must never do is leave a timeline active once nothing can be played
+    /// on it. Such a timeline can never produce another state, yet its frontier
+    /// would keep counting towards the present and pin it there forever — leaving
+    /// every other timeline unable to advance past it, in a run that can no longer
+    /// end.
+    /// </summary>
+    public static TimelineStatus ClassifyAfterPlacement(SudokuBoard board)
+    {
+        if (board is null)
+        {
+            throw new ArgumentNullException(nameof(board));
+        }
+
+        if (board.IsSolved())
+        {
+            return TimelineStatus.Solved;
+        }
+
+        return board.HasAnyLegalPlacement() ? TimelineStatus.Active : TimelineStatus.Dead;
+    }
 }

@@ -76,6 +76,61 @@ public sealed class TimelineClassifierTests
         Assert.That(() => TimelineClassifier.ClassifyBoard(null!), Throws.ArgumentNullException);
     }
 
+    // ---- classification after an ordinary placement ----------------------
+
+    [Test]
+    public void AfterAPlacementACompleteAndValidBoardIsSolved()
+    {
+        Assert.That(
+            TimelineClassifier.ClassifyAfterPlacement(SudokuBoard.Parse(BoardSize.FourByFour, Puzzles.Solved4)),
+            Is.EqualTo(TimelineStatus.Solved));
+    }
+
+    [Test]
+    public void AfterAPlacementABoardWithNoLegalMoveLeftIsDead()
+    {
+        Assert.That(
+            TimelineClassifier.ClassifyAfterPlacement(SudokuBoard.Parse(BoardSize.FourByFour, Puzzles.Blocked4)),
+            Is.EqualTo(TimelineStatus.Dead));
+    }
+
+    [Test]
+    public void AfterAPlacementABoardThatStillOffersMovesIsActive()
+    {
+        Assert.That(
+            TimelineClassifier.ClassifyAfterPlacement(SudokuBoard.Parse(BoardSize.FourByFour, Puzzles.Unique4)),
+            Is.EqualTo(TimelineStatus.Active));
+    }
+
+    [Test]
+    public void OrdinaryPlayAsksALocalQuestionWhereBranchingAsksAGlobalOne()
+    {
+        // Zero4 offers no completion at all, but it does offer legal placements.
+        // Branching on such a board produces a dead timeline immediately; reaching
+        // it through ordinary play leaves the timeline playable, so the player
+        // discovers the mistake by playing rather than by being told.
+        SudokuBoard board = SudokuBoard.Parse(BoardSize.FourByFour, Puzzles.Zero4);
+
+        Assert.That(board.HasAnyLegalPlacement(), Is.True);
+        Assert.That(TimelineClassifier.ClassifyBoard(board), Is.EqualTo(TimelineStatus.Dead));
+        Assert.That(TimelineClassifier.ClassifyAfterPlacement(board), Is.EqualTo(TimelineStatus.Active));
+    }
+
+    [Test]
+    public void NeitherClassificationLeavesAnUnplayableBoardActive()
+    {
+        SudokuBoard blocked = SudokuBoard.Parse(BoardSize.FourByFour, Puzzles.Blocked4);
+
+        Assert.That(TimelineClassifier.ClassifyBoard(blocked), Is.Not.EqualTo(TimelineStatus.Active));
+        Assert.That(TimelineClassifier.ClassifyAfterPlacement(blocked), Is.Not.EqualTo(TimelineStatus.Active));
+    }
+
+    [Test]
+    public void ClassifyingAfterAPlacementNeedsABoard()
+    {
+        Assert.That(() => TimelineClassifier.ClassifyAfterPlacement(null!), Throws.ArgumentNullException);
+    }
+
     [Test]
     public void ClassificationNeverReportsAnImpossibleBoardAsActive()
     {

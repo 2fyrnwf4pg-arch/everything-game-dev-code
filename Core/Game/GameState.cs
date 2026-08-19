@@ -81,7 +81,7 @@ public sealed class GameState
         }
 
         SudokuBoard startingBoard = level.StartingBoard;
-        TimelineStatus status = startingBoard.IsSolved() ? TimelineStatus.Solved : TimelineStatus.Active;
+        TimelineStatus status = TimelineClassifier.ClassifyAfterPlacement(startingBoard);
 
         // The root timeline occupies one of the level's active slots.
         Timeline root = Timeline.CreateRoot(RootTimelineId, startingBoard, status, occupiesActiveSlot: true);
@@ -199,7 +199,7 @@ public sealed class GameState
 
         Timeline timeline = SelectedTimeline;
         SudokuBoard nextBoard = timeline.Frontier.WithValue(row, column, value);
-        TimelineStatus nextStatus = nextBoard.IsSolved() ? TimelineStatus.Solved : TimelineStatus.Active;
+        TimelineStatus nextStatus = TimelineClassifier.ClassifyAfterPlacement(nextBoard);
 
         Timeline[] updated = ReplaceTimeline(timeline.WithNextState(nextBoard, nextStatus));
 
@@ -217,9 +217,12 @@ public sealed class GameState
         int column,
         int value)
     {
-        if (Outcome != GameOutcome.InProgress)
+        // A won run is finished. A lost one is not: a Temporal Move is exactly the
+        // way back from a dead end, so it stays available while budget and a
+        // reachable historical state remain.
+        if (Outcome == GameOutcome.Won)
         {
-            return TemporalMoveRejection.GameAlreadyFinished;
+            return TemporalMoveRejection.RunAlreadyWon;
         }
 
         // 1. temporal budget must be left
@@ -248,16 +251,24 @@ public sealed class GameState
             return TemporalMoveRejection.SourceTimeIsNotHistorical;
         }
 
-        // 5. and strictly before the global present
-        if (Present is null || sourceTime >= Present.Value)
+        // Conditions 5 and 6 measure from the present. A lost run may have no
+        // present at all — nothing is active — and yet reaching back into history
+        // is exactly what should still be possible there. In that case the source
+        // timeline's own frontier stands in: it is where that line of history
+        // actually ended, and so where a player reaching back counts from. While a
+        // present exists, nothing about these two conditions changes.
+        int reachFrom = Present ?? source.FrontierTime;
+
+        // 5. the source state must lie strictly before that point
+        if (sourceTime >= reachFrom)
         {
             return TemporalMoveRejection.SourceTimeNotBeforePresent;
         }
 
         // 6. and within the level's temporal window
-        int reach = Present.Value - sourceTime;
+        int reach = reachFrom - sourceTime;
 
-        if (reach < 0 || reach > Level.TemporalWindow)
+        if (reach > Level.TemporalWindow)
         {
             return TemporalMoveRejection.OutsideTemporalWindow;
         }

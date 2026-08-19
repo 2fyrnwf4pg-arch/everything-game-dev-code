@@ -96,13 +96,29 @@ public sealed class PresentTests
     }
 
     [Test]
-    public void AnAbsentPresentDoesNotByItselfMeanTheRunIsOver()
+    public void AnAbsentPresentDoesNotByItselfSayHowTheRunEnded()
     {
-        GameState stuck = GameState.Start(Levels.FromText("stuck", BoardSize.FourByFour, Puzzles.Blocked4));
+        // Both of these have no present at all, and they are opposite outcomes.
+        // The outcome is computed from the timelines, never read off the present.
+        GameState won = Levels.SolveSelectedTimeline(StartGame());
+        GameState lost = GameState.Start(Levels.FromText("stuck", BoardSize.FourByFour, Puzzles.Blocked4));
 
-        // The stuck timeline is still ACTIVE and still holds its slot, so it does
-        // define a present — even though nothing can be played on it.
-        Assert.That(stuck.Present, Is.EqualTo(0));
-        Assert.That(stuck.Outcome, Is.EqualTo(GameOutcome.GameOver));
+        Assert.That(won.Present, Is.Null);
+        Assert.That(lost.Present, Is.Null);
+        Assert.That(won.Outcome, Is.EqualTo(GameOutcome.Won));
+        Assert.That(lost.Outcome, Is.EqualTo(GameOutcome.GameOver));
+    }
+
+    [Test]
+    public void ATimelineThatCanNoLongerBePlayedStopsHoldingThePresentBack()
+    {
+        // A timeline with no legal placement left can never produce another state.
+        // If it kept counting towards the present, it would pin the present at its
+        // own frontier forever and no other timeline could ever advance past it.
+        GameState stuck = GameState.Start(
+            Levels.FromText("stuck", BoardSize.FourByFour, Puzzles.Blocked4));
+
+        Assert.That(stuck.SelectedTimeline.Status, Is.EqualTo(TimelineStatus.Dead));
+        Assert.That(stuck.Present, Is.Null);
     }
 }

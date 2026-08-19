@@ -422,7 +422,9 @@ everything-game-dev-code
 │   │   ├── GameOutcome.cs
 │   │   ├── GameState.cs
 │   │   ├── MoveRejection.cs
-│   │   └── MoveResult.cs
+│   │   ├── MoveResult.cs
+│   │   ├── TemporalMoveRejection.cs
+│   │   └── TemporalMoveResult.cs
 │   ├── Level
 │   │   └── LevelDefinition.cs
 │   ├── Solver
@@ -432,6 +434,7 @@ everything-game-dev-code
 │   │   └── SudokuBoard.cs
 │   ├── Timeline
 │   │   ├── Timeline.cs
+│   │   ├── TimelineClassifier.cs
 │   │   └── TimelineStatus.cs
 │   ├── Validation
 │   │   └── .gitkeep
@@ -1491,17 +1494,20 @@ everything-game-dev-code
 │   ├── Game
 │   │   ├── GameStateTests.cs
 │   │   ├── PresentTests.cs
+│   │   ├── TemporalMoveTests.cs
 │   │   └── VictoryTests.cs
 │   ├── Level
 │   │   └── LevelDefinitionTests.cs
 │   ├── Scenarios
-│   │   └── ScenarioATests.cs
+│   │   ├── ScenarioATests.cs
+│   │   └── ScenarioCTests.cs
 │   ├── Solver
 │   │   └── SudokuSolverTests.cs
 │   ├── Sudoku
 │   │   ├── BoardSizeTests.cs
 │   │   └── SudokuBoardTests.cs
 │   ├── Timeline
+│   │   ├── TimelineClassifierTests.cs
 │   │   └── TimelineTests.cs
 │   ├── ApiSurfaceTests.cs
 │   ├── SkeletonTests.cs

@@ -12,8 +12,16 @@ public enum TemporalMoveRejection
     /// <summary>The branch is legal.</summary>
     None = 0,
 
-    /// <summary>The run is already won or already over.</summary>
-    GameAlreadyFinished = 1,
+    /// <summary>
+    /// The run is already won, so there is nothing left to explore.
+    ///
+    /// A lost run is deliberately not covered by this: as long as temporal budget
+    /// remains and a historical state is still in reach, a Temporal Move may open
+    /// a playable branch and bring the run back. Recovering from a bad historical
+    /// choice without an undo is what the mechanic exists for, so a dead end must
+    /// not be what puts it out of reach.
+    /// </summary>
+    RunAlreadyWon = 1,
 
     /// <summary>No temporal budget is left.</summary>
     NoTemporalBudget = 2,

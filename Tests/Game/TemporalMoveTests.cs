@@ -439,31 +439,98 @@ public sealed class TemporalMoveTests
     // ---- interaction with a finished run ---------------------------------
 
     [Test]
-    public void AFinishedRunRefusesTemporalMovesEvenWhenABranchWouldOtherwiseBeLegal()
+    public void ALostRunStillAllowsTemporalMoves()
     {
-        // Documents a real interaction between two rules as they are specified.
-        // Game over fires as soon as no active timeline has a legal placement left,
-        // and a finished run refuses further actions — so temporal budget that
-        // could still have opened a playable branch goes unused. Everything the
-        // branch itself needs is satisfied here; only the finished run blocks it.
+        // Ordinary play is over, but the run is not: budget and a reachable
+        // historical state are still there, so a branch may be attempted.
         GameState game = GameState.Start(
             Levels.FromText("almost-stuck", BoardSize.FourByFour, Puzzles.AlmostBlocked4, temporalBudget: 3));
 
         game = game.PlaceValue(0, 0, 4).State;
 
         Assert.That(game.Outcome, Is.EqualTo(GameOutcome.GameOver));
-        Assert.That(game.RemainingTemporalBudget, Is.EqualTo(3), "budget is still there");
-        Assert.That(game.Present, Is.EqualTo(1));
+        Assert.That(game.PlaceValue(1, 1, 2).Rejection, Is.EqualTo(MoveRejection.GameAlreadyFinished));
 
-        Timeline root = game.GetTimeline(GameState.RootTimelineId);
+        TemporalMoveResult result = game.PerformTemporalMove(GameState.RootTimelineId, 0, 3, 0, 4);
 
-        Assert.That(root.ContainsTime(0), Is.True);
-        Assert.That(root.StateAt(0).IsPlacementLegal(3, 0, 4), Is.True, "a legal alternative exists at T0");
-        Assert.That(game.Level.TemporalWindow, Is.GreaterThanOrEqualTo(1), "the window would reach T0");
+        Assert.That(result.Succeeded, Is.True, result.Rejection.ToString());
+        Assert.That(result.State.RemainingTemporalBudget, Is.EqualTo(2));
+    }
 
+    [Test]
+    public void ATemporalMoveCanBringALostRunBack()
+    {
+        // The bad historical choice this recovers from: 3 at r0c1 is legal Sudoku
+        // but wrong, and ordinary play then runs out of legal placements nine moves
+        // later without ever completing the grid.
+        GameState game = GameState.Start(Levels.SolvableFourByFour(temporalBudget: 2));
+        SudokuBoard start = game.SelectedTimeline.StateAt(0);
+
+        game = game.PlaceValue(0, 1, 3).State;
+
+        while (game.Outcome == GameOutcome.InProgress)
+        {
+            game = PlayAnyLegalMove(game);
+        }
+
+        Assert.That(game.Outcome, Is.EqualTo(GameOutcome.GameOver));
+        Assert.That(game.SelectedTimeline.Frontier.IsComplete, Is.False);
+        Assert.That(game.SelectedTimeline.Status, Is.EqualTo(TimelineStatus.Dead));
+        Assert.That(game.Present, Is.Null, "nothing is active, so there is no present to reach back from");
+
+        // Reach back past the mistake and take the other legal value instead.
+        TemporalMoveResult rescue = game.PerformTemporalMove(GameState.RootTimelineId, 0, 0, 1, 4);
+
+        Assert.That(rescue.Succeeded, Is.True, rescue.Rejection.ToString());
+
+        GameState recovered = rescue.State;
+        Timeline branch = recovered.GetTimeline(rescue.NewTimelineId!.Value);
+
+        Assert.That(branch.Status, Is.EqualTo(TimelineStatus.Active));
+        Assert.That(branch.StateAt(0), Is.EqualTo(start), "the branch starts from the untouched original");
+        Assert.That(recovered.Outcome, Is.EqualTo(GameOutcome.InProgress), "the run is playable again");
+        Assert.That(recovered.Present, Is.EqualTo(1), "the branch pulls the present back to its own frontier");
+
+        // And it really is winnable from here.
+        GameState won = Levels.SolveSelectedTimeline(recovered.SelectTimeline(branch.Id));
+
+        Assert.That(won.Outcome, Is.EqualTo(GameOutcome.Won));
+    }
+
+    [Test]
+    public void WithNoPresentTheWindowIsMeasuredFromTheSourceTimelinesOwnFrontier()
+    {
+        // AlmostBlocked4 dies one move in, so the run has no present at all. The
+        // source timeline's frontier stands in, and the window still bites.
+        GameState game = GameState.Start(
+            Levels.FromText(
+                "almost-stuck", BoardSize.FourByFour, Puzzles.AlmostBlocked4, temporalBudget: 3, temporalWindow: 0));
+
+        game = game.PlaceValue(0, 0, 4).State;
+
+        Assert.That(game.Present, Is.Null);
+        Assert.That(game.SelectedTimeline.FrontierTime, Is.EqualTo(1));
+
+        // reach = 1 - 0 = 1, beyond a window of 0
         Assert.That(
-            game.PerformTemporalMove(GameState.RootTimelineId, 0, 3, 0, 4).Rejection,
-            Is.EqualTo(TemporalMoveRejection.GameAlreadyFinished));
+            game.ValidateTemporalMove(GameState.RootTimelineId, 0, 3, 0, 4),
+            Is.EqualTo(TemporalMoveRejection.OutsideTemporalWindow));
+    }
+
+    [Test]
+    public void ATimelineThatIsDoomedButStillPlayableStaysActive()
+    {
+        // Ordinary play does not run the solver. A wrong-but-legal value leaves a
+        // grid with no completion, and the timeline stays playable until it
+        // actually runs out of moves.
+        GameState game = GameState.Start(Levels.SolvableFourByFour());
+
+        game = game.PlaceValue(0, 1, 3).State;
+
+        Assert.That(game.SelectedTimeline.Status, Is.EqualTo(TimelineStatus.Active));
+        Assert.That(game.SelectedTimeline.Frontier.HasAnyLegalPlacement(), Is.True);
+        Assert.That(TimelineClassifier.ClassifyBoard(game.SelectedTimeline.Frontier), Is.EqualTo(TimelineStatus.Dead));
+        Assert.That(game.Outcome, Is.EqualTo(GameOutcome.InProgress));
     }
 
     [Test]
@@ -473,6 +540,32 @@ public sealed class TemporalMoveTests
 
         Assert.That(
             won.PerformTemporalMove(GameState.RootTimelineId, 0, 0, 1, 3).Rejection,
-            Is.EqualTo(TemporalMoveRejection.GameAlreadyFinished));
+            Is.EqualTo(TemporalMoveRejection.RunAlreadyWon));
+    }
+
+    /// <summary>Plays the first legal placement in row-major, ascending-value order.</summary>
+    private static GameState PlayAnyLegalMove(GameState game)
+    {
+        BoardSize size = game.Level.Size;
+
+        for (int row = 0; row < size.Side; row++)
+        {
+            for (int column = 0; column < size.Side; column++)
+            {
+                for (int value = size.MinValue; value <= size.MaxValue; value++)
+                {
+                    MoveResult result = game.PlaceValue(row, column, value);
+
+                    if (result.Succeeded)
+                    {
+                        return result.State;
+                    }
+                }
+            }
+        }
+
+        Assert.Fail("no legal placement was available");
+
+        return game;
     }
 }

@@ -528,6 +528,57 @@ starts a new plan.
 
 ---
 
+## Rule decisions made during implementation
+
+The phase texts above are the original specification and are left as written.
+This log records the points where implementation forced a decision the spec did
+not settle, so later phases work from the resolved rule instead of re-deriving
+the old one. Each entry is covered by a named test.
+
+### D1 — A lost run still allows Temporal Moves (decided during Phase 3)
+
+Only a **won** run is terminal. §15 game over means ordinary placements are
+exhausted, not that the run is finished: while temporal budget and a reachable
+historical state remain, a Temporal Move may branch off history, and a playable
+branch puts the run back in progress.
+
+*Why:* §13 lists "recover from a bad historical choice without a conventional
+Undo" as a purpose of Temporal Moves. Refusing them once ordinary play dead-ends
+would make that purpose unreachable in exactly the situation it exists for.
+
+*Tests:* `ALostRunStillAllowsTemporalMoves`, `ATemporalMoveCanBringALostRunBack`,
+`AWonRunRefusesTemporalMoves`.
+
+### D2 — A timeline with no legal placement left is DEAD (decided during Phase 3)
+
+A normal placement classifies the resulting state: complete and valid → `SOLVED`,
+no legal placement anywhere → `DEAD`, otherwise `ACTIVE`. This is a *local*
+check; unlike branch classification (§7) it does not run the solver, so a
+timeline whose board has no completion but still offers placements stays
+`ACTIVE` and the player discovers the mistake by playing.
+
+*Why:* without this, a timeline that had run out of moves stayed `ACTIVE`, kept
+counting towards PRESENT, and pinned it at its own frontier forever — so every
+other timeline was blocked from advancing past it, in a run that could no longer
+end. That soft-lock is reachable as soon as D1 allows a rescue branch.
+
+*Tests:* `ATimelineThatCanNoLongerBePlayedStopsHoldingThePresentBack`,
+`ATimelineThatIsDoomedButStillPlayableStaysActive`,
+`OrdinaryPlayAsksALocalQuestionWhereBranchingAsksAGlobalOne`.
+
+### D3 — With no PRESENT, a branch measures from the source frontier (decided during Phase 3)
+
+§8's "configured terminal value" sentinel is modelled as an absent PRESENT
+(`int?`) rather than a magic number, so no code can infer victory or game over
+from it. Branch conditions 5 and 6 (§6, §11) then need a stand-in when nothing
+is active: the **source timeline's own frontier**, which is where that line of
+history actually ended. While a PRESENT exists, neither condition changes.
+
+*Tests:* `WithNoPresentTheWindowIsMeasuredFromTheSourceTimelinesOwnFrontier`,
+`AnAbsentPresentDoesNotByItselfSayHowTheRunEnded`.
+
+---
+
 ## Reference: original design note
 
 The game is inspired by the *concepts* of 5D Chess With Multiverse Time
